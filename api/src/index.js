@@ -13,6 +13,7 @@ dotenv.config();
 const authRoutes = require('./routes/authRoutes');
 const catalogRoutes = require('./routes/catalogRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const ordersRoutes = require('./routes/ordersRoutes');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -167,6 +168,7 @@ app.get('/health', async (_req, res) => {
 app.use('/auth', authRoutes);
 app.use('/catalog', catalogRoutes);
 app.use('/admin', adminRoutes);
+app.use('/orders', ordersRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(isProduction ? err.message : err);
