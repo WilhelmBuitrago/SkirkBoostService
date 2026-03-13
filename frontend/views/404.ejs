@@ -6,8 +6,8 @@
     <title><%= pageTitle %></title>
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
-  <body data-api-base-url="<%= apiBaseUrl %>">
-    <%- include('partials/topbar', { apiBaseUrl }) %>
+  <body data-api-base-url="<%= apiBaseUrl %>" data-platform-status="<%= platformStatus %>">
+    <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
     <main class="container not-found">
       <h1><%= pageTitle %></h1>
       <p><%= message %></p>

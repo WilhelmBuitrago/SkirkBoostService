@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-api-base-url="<%= apiBaseUrl %>" data-platform-status="<%= platformStatus %>" data-exchange-rate="<%= exchangeRate %>">
+    <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
+
+    <main class="container main-content">
+      <section class="service-section">
+        <div class="section-head">
+          <h1>Farmeo de deseos</h1>
+          <p>Tarifas separadas por progreso del mapa.</p>
+        </div>
+        <div class="columns-two">
+          <div class="price-table-wrap">
+            <h3>Menos del 50% del mapa</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cantidad</th>
+                  <th>COP</th>
+                  <th>USD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% wishFarming.lessThan50.forEach((item) => { %>
+                <tr class="<%= item.isAvailable ? '' : 'is-disabled' %>">
+                  <td><%= item.label %></td>
+                  <td><%= item.priceCopFormatted ? '$ ' + item.priceCopFormatted : '-' %></td>
+                  <td><%= item.priceUsdFormatted ? '$ ' + item.priceUsdFormatted : '-' %></td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+          <div class="price-table-wrap">
+            <h3>Mas del 50% del mapa</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cantidad</th>
+                  <th>COP</th>
+                  <th>USD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% wishFarming.moreThan50.forEach((item) => { %>
+                <tr class="<%= item.isAvailable ? '' : 'is-disabled' %>">
+                  <td><%= item.label %></td>
+                  <td><%= item.priceCopFormatted ? '$ ' + item.priceCopFormatted : 'Consultar' %></td>
+                  <td><%= item.priceUsdFormatted ? '$ ' + item.priceUsdFormatted : 'Consultar' %></td>
+                </tr>
+                <% if (item.note) { %>
+                <tr>
+                  <td colspan="3" class="note-cell"><%= item.note %></td>
+                </tr>
+                <% } %>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

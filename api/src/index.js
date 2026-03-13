@@ -6,6 +6,7 @@ const pgSessionFactory = require('connect-pg-simple');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const pool = require('./db/pool');
+const { hashPassword } = require('./services/passwordService');
 
 dotenv.config();
 
@@ -17,6 +18,10 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const isProduction = process.env.NODE_ENV === 'production';
 
+function isAdminBootstrapEnabled() {
+  return String(process.env.ADMIN_BOOTSTRAP_ENABLED || '').toLowerCase() === 'true';
+}
+
 function validateEnvironment() {
   const required = ['DATABASE_URL', 'SESSION_SECRET', 'PEPPER'];
   const missing = required.filter((key) => !process.env[key]);
@@ -27,6 +32,27 @@ function validateEnvironment() {
 
   if (missing.length > 0) {
     throw new Error(`Missing required env vars: ${missing.join(', ')}`);
+  }
+
+  if (isAdminBootstrapEnabled()) {
+    const adminRequired = ['ADMIN_BOOTSTRAP_USER', 'ADMIN_BOOTSTRAP_PASSWORD'];
+    adminRequired.forEach((key) => {
+      if (!process.env[key]) {
+        missing.push(key);
+      }
+    });
+
+    if (missing.length > 0) {
+      throw new Error(`Missing required env vars: ${missing.join(', ')}`);
+    }
+
+    if (String(process.env.ADMIN_BOOTSTRAP_USER).trim().length < 3) {
+      throw new Error('ADMIN_BOOTSTRAP_USER must have at least 3 characters');
+    }
+
+    if (String(process.env.ADMIN_BOOTSTRAP_PASSWORD).length < 12) {
+      throw new Error('ADMIN_BOOTSTRAP_PASSWORD must have at least 12 characters');
+    }
   }
 
   if (isProduction && process.env.SESSION_SECRET === 'unsafe_dev_secret') {
@@ -50,6 +76,37 @@ function runMigrationsOnStartup() {
 }
 
 runMigrationsOnStartup();
+
+async function ensureAdminFromEnv() {
+  if (!isAdminBootstrapEnabled()) {
+    return;
+  }
+
+  const existingAdmin = await pool.query("SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1");
+  if (existingAdmin.rowCount > 0) {
+    console.log('Admin bootstrap: administrador ya existe, no se realizaron cambios.');
+    return;
+  }
+
+  const username = String(process.env.ADMIN_BOOTSTRAP_USER || '').trim();
+  const password = String(process.env.ADMIN_BOOTSTRAP_PASSWORD || '');
+  const { hash, salt } = await hashPassword(password);
+
+  try {
+    await pool.query(
+      'INSERT INTO usuarios (usuario, password_hash, password_salt, rol) VALUES ($1, $2, $3, $4)',
+      [username, hash, salt, 'administrador']
+    );
+    console.log('Admin bootstrap: administrador inicial creado desde variables de entorno.');
+  } catch (error) {
+    if (String(error.message || '').includes('duplicate key')) {
+      console.log('Admin bootstrap: usuario ya existe, no se realizaron cambios.');
+      return;
+    }
+
+    throw error;
+  }
+}
 
 const PgSession = pgSessionFactory(session);
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || (isProduction ? '' : 'http://localhost:3000'))
@@ -116,12 +173,30 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Error interno del API' });
 });
 
-const server = app.listen(PORT, () => {
-  const externalUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
-  console.log(`API activa en ${externalUrl}`);
+let server;
+
+async function startServer() {
+  await ensureAdminFromEnv();
+
+  server = app.listen(PORT, () => {
+    const externalUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    console.log(`API activa en ${externalUrl}`);
+  });
+}
+
+startServer().catch(async (error) => {
+  console.error(isProduction ? error.message : error);
+  await pool.end();
+  process.exit(1);
 });
 
 async function shutdown() {
+  if (!server) {
+    await pool.end();
+    process.exit(0);
+    return;
+  }
+
   server.close(async () => {
     await pool.end();
     process.exit(0);

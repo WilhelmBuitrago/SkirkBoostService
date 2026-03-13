@@ -51,6 +51,21 @@ async function fetchCatalog() {
   return response.json();
 }
 
+async function fetchPlatformStatus() {
+  try {
+    const data = await fetchCatalog();
+    return data.runtimeConfig.platformStatus || 'ACTIVA';
+  } catch (_error) {
+    return 'ACTIVA';
+  }
+}
+
+function splitFarmingItems(services) {
+  const ascensionItem = services.farming.items.find((item) => item.id === 'ascension-personajes') || null;
+  const farmingItems = services.farming.items.filter((item) => item.id !== 'ascension-personajes');
+  return { ascensionItem, farmingItems };
+}
+
 app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
@@ -58,11 +73,57 @@ app.get('/health', (_req, res) => {
 app.get('/', async (_req, res, next) => {
   try {
     const data = await fetchCatalog();
+    const { farmingItems, ascensionItem } = splitFarmingItems(data.services);
+
+    const serviceCards = [
+      {
+        id: 'exploracion',
+        title: 'Exploracion',
+        href: '/exploracion',
+        description: 'Explora regiones y calcula servicios por zona con detalle completo.',
+        meta: `${data.zones.length} regiones`
+      },
+      {
+        id: 'farmeo-deseos',
+        title: 'Farmeo de deseos',
+        href: '/farmeo-deseos',
+        description: 'Tarifas por cantidad de deseos segun avance del mapa.',
+        meta: `${data.services.wishFarming.lessThan50.length + data.services.wishFarming.moreThan50.length} opciones`
+      },
+      {
+        id: 'misiones',
+        title: 'Realizacion de misiones',
+        href: '/misiones',
+        description: 'Servicios por tipo de mision, desde Arconte hasta eventos.',
+        meta: `${data.services.missions.items.length} tipos`
+      },
+      {
+        id: 'farmeo',
+        title: 'Farmeo',
+        href: '/farmeo',
+        description: 'Armas, recursos y farm especializado para tu cuenta.',
+        meta: `${farmingItems.length} servicios`
+      },
+      {
+        id: 'ascension',
+        title: 'Ascension de personajes',
+        href: '/ascension',
+        description: 'Servicio de ascension enfocado y configurable.',
+        meta: ascensionItem ? '1 servicio dedicado' : 'Consultar disponibilidad'
+      },
+      {
+        id: 'mantenimiento',
+        title: 'Mantenimiento de cuenta',
+        href: '/mantenimiento',
+        description: 'Plan diario, semanal o mensual para mantener progreso.',
+        meta: `${data.services.maintenance.items.length} planes`
+      }
+    ];
+
     res.render('index', {
       pageTitle: "Skirk's Boost Service",
       exchangeRate: data.exchangeRate,
-      zones: data.zones,
-      services: data.services,
+      serviceCards,
       platformStatus: data.runtimeConfig.platformStatus,
       apiBaseUrl: PUBLIC_API_BASE_URL
     });
@@ -80,7 +141,8 @@ app.get('/exploracion/:zoneId', async (req, res, next) => {
       return res.status(404).render('404', {
         pageTitle: 'Zona no encontrada',
         message: 'La region solicitada no existe o fue removida del catalogo.',
-        apiBaseUrl: PUBLIC_API_BASE_URL
+        apiBaseUrl: PUBLIC_API_BASE_URL,
+        platformStatus: data.runtimeConfig.platformStatus
       });
     }
 
@@ -99,25 +161,135 @@ app.get('/exploracion/:zoneId', async (req, res, next) => {
   }
 });
 
-app.get('/login', (_req, res) => {
+app.get('/exploracion', async (_req, res, next) => {
+  try {
+    const data = await fetchCatalog();
+    res.render('exploration', {
+      pageTitle: 'Exploracion por regiones',
+      zones: data.zones,
+      platformStatus: data.runtimeConfig.platformStatus,
+      apiBaseUrl: PUBLIC_API_BASE_URL
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/farmeo-deseos', async (_req, res, next) => {
+  try {
+    const data = await fetchCatalog();
+    res.render('wish-farming', {
+      pageTitle: 'Farmeo de deseos',
+      wishFarming: data.services.wishFarming,
+      exchangeRate: data.exchangeRate,
+      platformStatus: data.runtimeConfig.platformStatus,
+      apiBaseUrl: PUBLIC_API_BASE_URL
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/misiones', async (_req, res, next) => {
+  try {
+    const data = await fetchCatalog();
+    res.render('missions', {
+      pageTitle: 'Realizacion de misiones',
+      missions: data.services.missions,
+      exchangeRate: data.exchangeRate,
+      platformStatus: data.runtimeConfig.platformStatus,
+      apiBaseUrl: PUBLIC_API_BASE_URL
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/farmeo', async (_req, res, next) => {
+  try {
+    const data = await fetchCatalog();
+    const { farmingItems } = splitFarmingItems(data.services);
+    res.render('farming', {
+      pageTitle: 'Farmeo',
+      farming: {
+        title: data.services.farming.title,
+        items: farmingItems
+      },
+      exchangeRate: data.exchangeRate,
+      platformStatus: data.runtimeConfig.platformStatus,
+      apiBaseUrl: PUBLIC_API_BASE_URL
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/ascension', async (_req, res, next) => {
+  try {
+    const data = await fetchCatalog();
+    const { ascensionItem } = splitFarmingItems(data.services);
+
+    if (!ascensionItem) {
+      return res.status(404).render('404', {
+        pageTitle: 'Servicio no encontrado',
+        message: 'No se encontro el servicio de ascension de personajes.',
+        apiBaseUrl: PUBLIC_API_BASE_URL,
+        platformStatus: data.runtimeConfig.platformStatus
+      });
+    }
+
+    return res.render('ascension', {
+      pageTitle: 'Ascension de personajes',
+      ascensionItem,
+      exchangeRate: data.exchangeRate,
+      platformStatus: data.runtimeConfig.platformStatus,
+      apiBaseUrl: PUBLIC_API_BASE_URL
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.get('/mantenimiento', async (_req, res, next) => {
+  try {
+    const data = await fetchCatalog();
+    res.render('maintenance', {
+      pageTitle: 'Mantenimiento de cuenta',
+      maintenance: data.services.maintenance,
+      exchangeRate: data.exchangeRate,
+      platformStatus: data.runtimeConfig.platformStatus,
+      apiBaseUrl: PUBLIC_API_BASE_URL
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get('/login', async (_req, res) => {
+  const platformStatus = await fetchPlatformStatus();
   res.render('login', {
     pageTitle: 'Login',
-    apiBaseUrl: PUBLIC_API_BASE_URL
+    apiBaseUrl: PUBLIC_API_BASE_URL,
+    platformStatus
   });
 });
 
-app.get('/config', (_req, res) => {
+app.get('/config', async (_req, res) => {
+  const platformStatus = await fetchPlatformStatus();
   res.render('config', {
     pageTitle: 'Configuracion',
-    apiBaseUrl: PUBLIC_API_BASE_URL
+    apiBaseUrl: PUBLIC_API_BASE_URL,
+    platformStatus
   });
 });
 
-app.get('/carrito', (_req, res) => {
+app.get('/carrito', async (_req, res) => {
+  const platformStatus = await fetchPlatformStatus();
   res.render('cart', {
     pageTitle: 'Carrito',
     apiBaseUrl: PUBLIC_API_BASE_URL,
-    exchangeRate: Number(process.env.USD_VALUE) || 2857
+    exchangeRate: Number(process.env.USD_VALUE) || 2857,
+    platformStatus
   });
 });
 
@@ -126,7 +298,8 @@ app.use((err, _req, res, _next) => {
   res.status(500).render('404', {
     pageTitle: 'Error interno',
     message: 'Ocurrio un error interno al cargar la informacion del servicio.',
-    apiBaseUrl: PUBLIC_API_BASE_URL
+    apiBaseUrl: PUBLIC_API_BASE_URL,
+    platformStatus: 'NO_ACTIVA'
   });
 });
 

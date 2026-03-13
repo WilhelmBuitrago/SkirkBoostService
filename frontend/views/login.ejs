@@ -6,20 +6,10 @@
     <title><%= pageTitle %></title>
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
-  <body data-api-base-url="<%= apiBaseUrl %>">
-    <%- include('partials/topbar', { apiBaseUrl }) %>
+  <body data-api-base-url="<%= apiBaseUrl %>" data-platform-status="<%= platformStatus %>">
+    <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
 
     <main class="container auth-layout">
-      <section class="service-section auth-card" id="bootstrap-card">
-        <h1>Registro inicial de administrador</h1>
-        <p>Este formulario solo funciona una vez: cuando no existe ningun administrador.</p>
-        <form id="bootstrap-form" class="stack-form">
-          <label>Usuario <input name="usuario" required /></label>
-          <label>Contrasena <input name="password" type="password" required /></label>
-          <button type="submit" class="btn-primary">Crear administrador</button>
-        </form>
-      </section>
-
       <section class="service-section auth-card">
         <h2>Iniciar sesion</h2>
         <form id="login-form" class="stack-form">

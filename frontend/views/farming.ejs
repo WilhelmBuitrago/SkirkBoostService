@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-api-base-url="<%= apiBaseUrl %>" data-platform-status="<%= platformStatus %>" data-exchange-rate="<%= exchangeRate %>">
+    <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
+
+    <main class="container main-content">
+      <section class="service-section">
+        <div class="section-head">
+          <h1>Farmeo</h1>
+          <p>Servicios de farmeo de recursos y armas.</p>
+        </div>
+        <div class="cards-inline farming-list">
+          <% farming.items.forEach((item) => { %>
+          <article class="mini-card farming-card <%= item.isAvailable ? '' : 'is-disabled' %>" data-price="<%= item.priceCop || 0 %>" data-books-price="<%= item.withBooksPriceCop || 0 %>">
+            <h3><%= item.label %></h3>
+            <p class="farming-price">
+              $ <span class="js-farm-price-cop"><%= item.priceCopFormatted || '-' %></span> COP
+            </p>
+            <p class="farming-price">
+              $ <span class="js-farm-price-usd"><%= item.priceUsdFormatted || '-' %></span> USD
+            </p>
+            <% if (item.hasOwnedCheck) { %>
+            <label class="check-line">
+              <input class="js-owned-weapon" type="checkbox" />
+              Tengo el arma (precio variable: contactar asesor)
+            </label>
+            <p class="contact-note hidden"><%= item.ownedNote %></p>
+            <% } %>
+            <% if (item.hasBooksCheck) { %>
+            <label class="check-line">
+              <input class="js-have-books" type="checkbox" />
+              Tengo libros (aplica tarifa reducida)
+            </label>
+            <p class="small-note">Con libros: $ <%= item.withBooksPriceCopFormatted %> COP | $ <%= item.withBooksPriceUsdFormatted %> USD</p>
+            <% } %>
+            <% if (item.priceCop) { %>
+            <button class="btn-secondary js-add-cart" data-service-id="<%= item.serviceId %>" data-label="<%= item.label %>" data-price="<%= item.priceCop %>">Agregar al carrito</button>
+            <% } %>
+          </article>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

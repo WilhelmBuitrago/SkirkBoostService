@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-api-base-url="<%= apiBaseUrl %>" data-platform-status="<%= platformStatus %>" data-exchange-rate="<%= exchangeRate %>">
+    <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
+
+    <main class="container main-content">
+      <section class="service-section">
+        <div class="section-head">
+          <h1>Realizacion de misiones</h1>
+          <p>Servicios de misiones listos para agregar al carrito.</p>
+        </div>
+        <div class="cards-inline">
+          <% missions.items.forEach((item) => { %>
+          <article class="mini-card <%= item.isAvailable ? '' : 'is-disabled' %>">
+            <h3><%= item.label %></h3>
+            <% if (item.priceCopFormatted) { %>
+            <p>$ <%= item.priceCopFormatted %> COP</p>
+            <p>$ <%= item.priceUsdFormatted %> USD</p>
+            <% } else { %>
+            <p>$ <%= item.priceRangeCopFormatted %> COP</p>
+            <p>$ <%= item.priceRangeUsdFormatted %> USD</p>
+            <% } %>
+            <% if (item.priceCop) { %>
+            <button class="btn-secondary js-add-cart" data-service-id="<%= item.serviceId %>" data-label="<%= item.label %>" data-price="<%= item.priceCop %>">Agregar al carrito</button>
+            <% } %>
+          </article>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

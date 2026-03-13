@@ -1,6 +1,12 @@
 <header class="topbar" data-api-base-url="<%= apiBaseUrl %>">
   <div class="container topbar__inner">
-    <a href="/" class="topbar__brand">Skirk Boost</a>
+    <% const currentStatus = platformStatus || 'ACTIVA'; %>
+    <div class="topbar__brand-wrap">
+      <a href="/" class="topbar__brand">Skirk Boost</a>
+      <span class="status-indicator topbar__status <%= currentStatus === 'ACTIVA' ? 'status-green' : currentStatus === 'PARCIAL' ? 'status-yellow' : 'status-red' %>">
+        <%= currentStatus %>
+      </span>
+    </div>
     <nav class="topbar__actions">
       <a href="/carrito" class="cart-link" aria-label="Abrir carrito">
         <span class="cart-link__icon">Carrito</span>

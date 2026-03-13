@@ -1,9 +1,7 @@
 (function () {
   const apiBaseUrl = document.body.dataset.apiBaseUrl;
-  const bootstrapForm = document.getElementById('bootstrap-form');
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
-  const bootstrapCard = document.getElementById('bootstrap-card');
   const message = document.getElementById('auth-message');
 
   function showMessage(text, isError) {
@@ -31,37 +29,10 @@
     return data;
   }
 
-  async function loadBootstrapStatus() {
-    const response = await fetch(`${apiBaseUrl}/auth/bootstrap-status`, {
-      credentials: 'include'
-    });
-    const data = await response.json();
-
-    if (!data.needsBootstrap && bootstrapCard) {
-      bootstrapCard.classList.add('hidden');
-    }
-  }
-
   if (!hasValidApiBaseUrl()) {
     showMessage('Configuracion API invalida. Contacta al administrador.', true);
     return;
   }
-
-  bootstrapForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(bootstrapForm);
-
-    try {
-      await postJson(`${apiBaseUrl}/auth/bootstrap-admin`, {
-        usuario: formData.get('usuario'),
-        password: formData.get('password')
-      });
-      showMessage('Administrador creado e inicio de sesion correcto.', false);
-      window.location.href = '/config';
-    } catch (error) {
-      showMessage(error.message, true);
-    }
-  });
 
   loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -100,5 +71,4 @@
     }
   });
 
-  loadBootstrapStatus();
 })();

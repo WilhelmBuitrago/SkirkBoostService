@@ -13,14 +13,6 @@ const authLimiter = rateLimit({
   message: { error: 'Demasiados intentos. Intenta nuevamente mas tarde.' }
 });
 
-const bootstrapLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Demasiados intentos de bootstrap.' }
-});
-
 function sanitizeUser(user) {
   return {
     id: user.id,
@@ -28,34 +20,6 @@ function sanitizeUser(user) {
     role: user.rol
   };
 }
-
-router.post('/bootstrap-admin', bootstrapLimiter, async (req, res, next) => {
-  try {
-    const { usuario, password } = req.body;
-    if (!usuario || !password) {
-      return res.status(400).json({ error: 'usuario y password son requeridos' });
-    }
-
-    const existingAdmin = await pool.query("SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1");
-    if (existingAdmin.rowCount > 0) {
-      return res.status(409).json({ error: 'El administrador inicial ya existe' });
-    }
-
-    const { hash, salt } = await hashPassword(password);
-    const created = await pool.query(
-      'INSERT INTO usuarios (usuario, password_hash, password_salt, rol) VALUES ($1, $2, $3, $4) RETURNING id, usuario, rol',
-      [usuario, hash, salt, 'administrador']
-    );
-
-    req.session.user = sanitizeUser(created.rows[0]);
-    return res.status(201).json({ user: req.session.user });
-  } catch (error) {
-    if (String(error.message || '').includes('duplicate key')) {
-      return res.status(409).json({ error: 'Usuario ya existe' });
-    }
-    return next(error);
-  }
-});
 
 router.post('/register', authLimiter, async (req, res, next) => {
   try {
@@ -128,15 +92,6 @@ router.get('/me', (req, res) => {
   }
 
   return res.json({ authenticated: true, user: req.session.user });
-});
-
-router.get('/bootstrap-status', async (_req, res, next) => {
-  try {
-    const existingAdmin = await pool.query("SELECT id FROM usuarios WHERE rol = 'administrador' LIMIT 1");
-    res.json({ needsBootstrap: existingAdmin.rowCount === 0 });
-  } catch (error) {
-    next(error);
-  }
 });
 
 module.exports = router;

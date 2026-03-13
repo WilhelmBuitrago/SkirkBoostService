@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-api-base-url="<%= apiBaseUrl %>" data-platform-status="<%= platformStatus %>">
+    <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
+
+    <main class="container main-content">
+      <section class="service-section">
+        <div class="section-head">
+          <h1>Exploracion por regiones</h1>
+          <p>Selecciona una region para entrar al detalle y calcular el servicio de exploracion.</p>
+        </div>
+        <div class="zones-grid">
+          <% zones.forEach((zone) => { %>
+          <article class="zone-card <%= zone.isAvailable ? '' : 'is-disabled' %>">
+            <a href="/exploracion/<%= zone.id %>" class="zone-card__link">
+              <div class="zone-card__image" style="background-image: linear-gradient(165deg, rgba(59,58,221,0.25), rgba(137,242,248,0.3)), url('/assets/zones/<%= zone.image %>');"></div>
+              <div class="zone-card__info">
+                <h3><%= zone.name %></h3>
+                <p>
+                  COP <strong><%= zone.basePriceCopFormatted %></strong>
+                  <span>| USD <strong><%= zone.basePriceUsdFormatted %></strong></span>
+                </p>
+                <% if (zone.missionOptions.length > 0) { %>
+                <small>Incluye opciones de mision en la vista detallada</small>
+                <% } %>
+                <% if (!zone.isAvailable) { %>
+                <small class="service-offline">No disponible actualmente</small>
+                <% } %>
+              </div>
+            </a>
+          </article>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

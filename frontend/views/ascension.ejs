@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-api-base-url="<%= apiBaseUrl %>" data-platform-status="<%= platformStatus %>" data-exchange-rate="<%= exchangeRate %>">
+    <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
+
+    <main class="container main-content">
+      <section class="service-section">
+        <div class="section-head">
+          <h1>Ascension de personajes</h1>
+          <p>Pagina dedicada exclusivamente al servicio de ascension.</p>
+        </div>
+        <article class="mini-card farming-card <%= ascensionItem.isAvailable ? '' : 'is-disabled' %>" data-price="<%= ascensionItem.priceCop || 0 %>" data-books-price="<%= ascensionItem.withBooksPriceCop || 0 %>">
+          <h3><%= ascensionItem.label %></h3>
+          <p class="farming-price">
+            $ <span class="js-farm-price-cop"><%= ascensionItem.priceCopFormatted || '-' %></span> COP
+          </p>
+          <p class="farming-price">
+            $ <span class="js-farm-price-usd"><%= ascensionItem.priceUsdFormatted || '-' %></span> USD
+          </p>
+          <% if (ascensionItem.hasBooksCheck) { %>
+          <label class="check-line">
+            <input class="js-have-books" type="checkbox" />
+            Tengo libros (aplica tarifa reducida)
+          </label>
+          <p class="small-note">Con libros: $ <%= ascensionItem.withBooksPriceCopFormatted %> COP | $ <%= ascensionItem.withBooksPriceUsdFormatted %> USD</p>
+          <% } %>
+          <% if (ascensionItem.priceCop) { %>
+          <button class="btn-secondary js-add-cart" data-service-id="<%= ascensionItem.serviceId %>" data-label="<%= ascensionItem.label %>" data-price="<%= ascensionItem.priceCop %>">Agregar al carrito</button>
+          <% } %>
+        </article>
+      </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

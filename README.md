@@ -30,6 +30,7 @@ Browser
 - El `docker-compose.yml` se mantiene para desarrollo local.
 - Variables obligatorias en Render:
 	- API: `DATABASE_URL`, `FRONTEND_ORIGIN`, `SESSION_SECRET`, `PEPPER`, `NODE_ENV=production`
+	- API (bootstrap admin por entorno): `ADMIN_BOOTSTRAP_ENABLED=true`, `ADMIN_BOOTSTRAP_USER`, `ADMIN_BOOTSTRAP_PASSWORD`
 	- Frontend: `API_BASE_URL`, `PUBLIC_API_BASE_URL`, `NODE_ENV=production`
 
 Notas de session/cookies:
@@ -83,7 +84,23 @@ docker compose up --build
 - Frontend: `http://localhost:3000`
 - API health: `http://localhost:4000/health`
 
-4. Crea administrador inicial en `http://localhost:3000/login` con el formulario de bootstrap.
+4. El API crea automaticamente el administrador inicial desde variables de entorno cuando `ADMIN_BOOTSTRAP_ENABLED=true`.
+
+5. Inicia sesion en `http://localhost:3000/login` con `ADMIN_BOOTSTRAP_USER` y `ADMIN_BOOTSTRAP_PASSWORD`.
+
+Nota: la creacion es idempotente. Si ya existe un usuario con rol `administrador`, no se crea otro.
+
+## Frontend por servicios
+
+- Home (`/`) muestra 6 opciones principales:
+	- Exploracion
+	- Farmeo de deseos
+	- Realizacion de misiones
+	- Farmeo
+	- Ascension de personajes
+	- Mantenimiento de cuenta
+- Cada bloque abre su pagina dedicada.
+- El estado de plataforma se muestra en el header junto a `Skirk Boost`.
 
 ## Estructura principal
 
@@ -110,8 +127,6 @@ render.yaml
 ## Endpoints API
 
 - Auth:
-	- `GET /auth/bootstrap-status`
-	- `POST /auth/bootstrap-admin`
 	- `POST /auth/register`
 	- `POST /auth/login`
 	- `POST /auth/logout`

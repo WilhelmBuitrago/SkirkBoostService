@@ -57,10 +57,21 @@ h3 {
   gap: 1rem;
 }
 
+.topbar__brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
 .topbar__brand {
   color: var(--text-main);
   text-decoration: none;
   font-family: 'Cinzel', serif;
+}
+
+.topbar__status {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
 }
 
 .topbar__actions {
@@ -302,6 +313,63 @@ td {
   gap: 0.8rem;
 }
 
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.service-hub-card {
+  border: 1px solid rgba(137, 242, 248, 0.18);
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(13, 19, 49, 0.88), rgba(7, 10, 23, 0.9));
+  overflow: hidden;
+  transition: transform 0.24s ease, border-color 0.24s ease;
+}
+
+.service-hub-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-ice);
+}
+
+.service-hub-card__link {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+  color: inherit;
+  text-decoration: none;
+  min-height: 210px;
+}
+
+.service-hub-card__kicker {
+  margin: 0;
+  color: var(--accent-ice);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+
+.service-hub-card__link h3 {
+  margin: 0;
+}
+
+.service-hub-card__link p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.service-hub-card__meta {
+  margin-top: auto;
+  color: var(--text-main);
+  font-size: 0.84rem;
+}
+
+.service-hub-card__action {
+  color: var(--accent-ice);
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
 .farming-card .farming-price {
   margin: 0.3rem 0;
   color: var(--text-muted);
@@ -506,6 +574,18 @@ td {
 
   .topbar__inner {
     padding: 0.6rem 0;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .topbar__brand-wrap {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .topbar__actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .btn-primary {
