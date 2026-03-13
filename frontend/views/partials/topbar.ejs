@@ -1,0 +1,15 @@
+<header class="topbar" data-api-base-url="<%= apiBaseUrl %>">
+  <div class="container topbar__inner">
+    <a href="/" class="topbar__brand">Skirk Boost</a>
+    <nav class="topbar__actions">
+      <a href="/carrito" class="cart-link" aria-label="Abrir carrito">
+        <span class="cart-link__icon">Carrito</span>
+        <span id="cart-count" class="cart-link__badge">0</span>
+      </a>
+      <a href="/config" id="config-link" class="topbar__link hidden">Config</a>
+      <a href="/login" id="login-link" class="topbar__link">Login</a>
+      <button id="logout-btn" class="btn-secondary hidden" type="button">Logout</button>
+      <span id="session-user" class="topbar__user"></span>
+    </nav>
+  </div>
+</header>

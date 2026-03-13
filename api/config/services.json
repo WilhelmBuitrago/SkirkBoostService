@@ -1,0 +1,79 @@
+{
+  "wishFarming": {
+    "title": "Farmeo de deseos",
+    "lessThan50": [
+      { "label": "1 deseo", "priceCop": 2000 },
+      { "label": "10 deseos", "priceCop": 20000 },
+      { "label": "20 deseos", "priceCop": 30000 },
+      { "label": "30 deseos", "priceCop": 45000 }
+    ],
+    "moreThan50": [
+      { "label": "1 deseo", "priceCop": 4000 },
+      { "label": "10 deseos", "priceCop": 30000 },
+      { "label": "20 deseos", "priceCop": 50000 },
+      {
+        "label": "30 deseos",
+        "priceCop": null,
+        "note": "No disponible. Contactar con asesor."
+      }
+    ]
+  },
+  "missions": {
+    "title": "Realizacion de misiones",
+    "items": [
+      { "label": "Arconte", "priceCop": 25000 },
+      { "label": "Legendaria", "priceCop": 15000 },
+      { "label": "Encuentro", "priceCop": 8000 },
+      { "label": "Mundo", "priceCopMin": 20000, "priceCopMax": 30000 },
+      { "label": "Evento principal", "priceCop": 25000 },
+      { "label": "Evento secundario", "priceCop": 8000 }
+    ]
+  },
+  "farming": {
+    "title": "Farmeo",
+    "items": [
+      {
+        "id": "captura-r5",
+        "label": "La Captura R5",
+        "priceCop": 40000,
+        "hasOwnedCheck": true,
+        "ownedNote": "Si ya tienes el arma, el precio baja. Contactar asesor."
+      },
+      {
+        "id": "vado-rio-ceniciento-r5",
+        "label": "Vado del Rio Ceniciento R5",
+        "priceCop": 20000,
+        "hasOwnedCheck": true,
+        "ownedNote": "Si ya tienes el arma, el precio baja. Contactar asesor."
+      },
+      {
+        "id": "forja-r5",
+        "label": "Forja R5",
+        "priceCop": 40000,
+        "hasOwnedCheck": true,
+        "ownedNote": "Si ya tienes el arma, el precio baja. Contactar asesor."
+      },
+      {
+        "id": "100-cristalopteros",
+        "label": "100 Cristalopteros",
+        "priceCop": 15000,
+        "hasOwnedCheck": false
+      },
+      {
+        "id": "ascension-personajes",
+        "label": "Ascension personajes",
+        "priceCop": 40000,
+        "hasBooksCheck": true,
+        "withBooksPriceCop": 25000
+      }
+    ]
+  },
+  "maintenance": {
+    "title": "Mantenimiento de cuenta",
+    "items": [
+      { "label": "Diario", "priceCop": 2000 },
+      { "label": "Semanal", "priceCop": 10000 },
+      { "label": "Mensual", "priceCop": 37000 }
+    ]
+  }
+}

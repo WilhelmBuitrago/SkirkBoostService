@@ -1,0 +1,136 @@
+[
+  {
+    "id": "monstadt",
+    "name": "Monstadt",
+    "image": "monstadt.svg",
+    "basePriceCop": 30000,
+    "missionOptions": []
+  },
+  {
+    "id": "liyue",
+    "name": "Liyue",
+    "image": "liyue.svg",
+    "basePriceCop": 55000,
+    "missionOptions": []
+  },
+  {
+    "id": "inazuma",
+    "name": "Inazuma",
+    "image": "inazuma.svg",
+    "basePriceCop": 90000,
+    "missionOptions": []
+  },
+  {
+    "id": "enkanomiya",
+    "name": "Enkanomiya",
+    "image": "enkanomiya.svg",
+    "basePriceCop": 40000,
+    "missionOptions": []
+  },
+  {
+    "id": "sima",
+    "name": "Sima",
+    "image": "sima.svg",
+    "basePriceCop": 50000,
+    "missionOptions": []
+  },
+  {
+    "id": "valle-chenyu",
+    "name": "Valle Chenyu",
+    "image": "valle-chenyu.svg",
+    "basePriceCop": 40000,
+    "missionOptions": []
+  },
+  {
+    "id": "sumeru-selva",
+    "name": "Sumeru (Selva)",
+    "image": "sumeru-selva.svg",
+    "basePriceCop": 100000,
+    "missionBundleTotalCop": 150000,
+    "missionOptions": [
+      {
+        "id": "mission-a",
+        "name": "Mision A",
+        "priceCop": 25000
+      },
+      {
+        "id": "mission-b",
+        "name": "Mision B",
+        "priceCop": 25000
+      }
+    ]
+  },
+  {
+    "id": "sumeru-desiertos",
+    "name": "Sumeru (Desiertos)",
+    "image": "sumeru-desiertos.svg",
+    "basePriceCop": 175000,
+    "missionBundleTotalCop": 250000,
+    "missionOptions": [
+      {
+        "id": "mission-a",
+        "name": "Mision A",
+        "priceCop": 37500
+      },
+      {
+        "id": "mission-b",
+        "name": "Mision B",
+        "priceCop": 37500
+      }
+    ]
+  },
+  {
+    "id": "fontaine",
+    "name": "Fontaine",
+    "image": "fontaine.svg",
+    "basePriceCop": 90000,
+    "missionBundleTotalCop": 265000,
+    "missionOptions": [
+      {
+        "id": "mission-a",
+        "name": "Mision A",
+        "priceCop": 87500
+      },
+      {
+        "id": "mission-b",
+        "name": "Mision B",
+        "priceCop": 87500
+      }
+    ]
+  },
+  {
+    "id": "natlan",
+    "name": "Natlan",
+    "image": "natlan.svg",
+    "basePriceCop": 180000,
+    "missionOptions": []
+  },
+  {
+    "id": "nod-krai",
+    "name": "Nod Krai",
+    "image": "nod-krai.svg",
+    "basePriceCop": 80000,
+    "missionOptions": []
+  },
+  {
+    "id": "montana-sagrada",
+    "name": "Montana Sagrada",
+    "image": "montana-sagrada.svg",
+    "basePriceCop": 30000,
+    "missionOptions": []
+  },
+  {
+    "id": "espinadragon",
+    "name": "Espinadragon",
+    "image": "espinadragon.svg",
+    "basePriceCop": 30000,
+    "missionOptions": []
+  },
+  {
+    "id": "mar-de-antano-petricor",
+    "name": "Mar de Antano Petricor",
+    "image": "mar-de-antano-petricor.svg",
+    "basePriceCop": 30000,
+    "missionOptions": []
+  }
+]

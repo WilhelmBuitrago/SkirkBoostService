@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-exchange-rate="<%= exchangeRate %>" data-api-base-url="<%= apiBaseUrl %>" data-platform-status="<%= platformStatus %>">
+    <%- include('partials/topbar', { apiBaseUrl }) %>
+    <div class="app-shell"></div>
+    <header class="hero">
+      <div class="hero__overlay"></div>
+      <div class="hero__content container">
+        <p class="hero__subtitle">Genshin Impact Customer Service</p>
+        <h1>Skirk's Boost Service</h1>
+        <p class="hero__desc">
+          Servicio enfocado en cuentas, exploracion, farmeo y misiones. Moneda principal COP y conversion
+          automatica a USD (1 USD = <%= exchangeRate %> COP).
+        </p>
+        <a class="btn-primary" href="#exploracion">Ver regiones de exploracion</a>
+      </div>
+    </header>
+
+    <main class="container main-content">
+      <section class="service-section">
+        <h2>Estado de la pagina</h2>
+        <div class="status-indicator <%= platformStatus === 'ACTIVA' ? 'status-green' : platformStatus === 'PARCIAL' ? 'status-yellow' : 'status-red' %>"><%= platformStatus %></div>
+      </section>
+
+      <section id="exploracion" class="service-section">
+        <div class="section-head">
+          <h2>Exploracion por regiones</h2>
+          <p>
+            Selecciona una zona para revisar su precio total y confirmar el servicio. Algunas regiones permiten
+            incluir misiones adicionales.
+          </p>
+        </div>
+        <div class="zones-grid">
+          <% zones.forEach((zone) => { %>
+          <article class="zone-card <%= zone.isAvailable ? '' : 'is-disabled' %>">
+            <a href="/exploracion/<%= zone.id %>" class="zone-card__link">
+              <div class="zone-card__image" style="background-image: linear-gradient(165deg, rgba(59,58,221,0.25), rgba(137,242,248,0.3)), url('/assets/zones/<%= zone.image %>');"></div>
+              <div class="zone-card__info">
+                <h3><%= zone.name %></h3>
+                <p>
+                  COP <strong><%= zone.basePriceCopFormatted %></strong>
+                  <span>| USD <strong><%= zone.basePriceUsdFormatted %></strong></span>
+                </p>
+                <% if (zone.missionOptions.length > 0) { %>
+                <small>Incluye opciones de mision en la vista detallada</small>
+                <% } %>
+                <% if (!zone.isAvailable) { %>
+                <small class="service-offline">No disponible actualmente</small>
+                <% } %>
+              </div>
+            </a>
+          </article>
+          <% }) %>
+        </div>
+      </section>
+
+      <section class="service-section">
+        <div class="section-head">
+          <h2><%= services.wishFarming.title %></h2>
+        </div>
+        <div class="columns-two">
+          <div class="price-table-wrap">
+            <h3>Menos del 50% del mapa</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cantidad</th>
+                  <th>COP</th>
+                  <th>USD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% services.wishFarming.lessThan50.forEach((item) => { %>
+                <tr class="<%= item.isAvailable ? '' : 'is-disabled' %>">
+                  <td><%= item.label %></td>
+                  <td><%= item.priceCopFormatted ? '$ ' + item.priceCopFormatted : '-' %></td>
+                  <td><%= item.priceUsdFormatted ? '$ ' + item.priceUsdFormatted : '-' %></td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+          <div class="price-table-wrap">
+            <h3>Mas del 50% del mapa</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cantidad</th>
+                  <th>COP</th>
+                  <th>USD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% services.wishFarming.moreThan50.forEach((item) => { %>
+                <tr class="<%= item.isAvailable ? '' : 'is-disabled' %>">
+                  <td><%= item.label %></td>
+                  <td><%= item.priceCopFormatted ? '$ ' + item.priceCopFormatted : 'Consultar' %></td>
+                  <td><%= item.priceUsdFormatted ? '$ ' + item.priceUsdFormatted : 'Consultar' %></td>
+                </tr>
+                <% if (item.note) { %>
+                <tr>
+                  <td colspan="3" class="note-cell"><%= item.note %></td>
+                </tr>
+                <% } %>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="service-section">
+        <div class="section-head">
+          <h2><%= services.missions.title %></h2>
+        </div>
+        <div class="cards-inline">
+          <% services.missions.items.forEach((item) => { %>
+          <article class="mini-card <%= item.isAvailable ? '' : 'is-disabled' %>">
+            <h3><%= item.label %></h3>
+            <% if (item.priceCopFormatted) { %>
+            <p>$ <%= item.priceCopFormatted %> COP</p>
+            <p>$ <%= item.priceUsdFormatted %> USD</p>
+            <% } else { %>
+            <p>$ <%= item.priceRangeCopFormatted %> COP</p>
+            <p>$ <%= item.priceRangeUsdFormatted %> USD</p>
+            <% } %>
+            <% if (item.priceCop) { %>
+            <button class="btn-secondary js-add-cart" data-service-id="<%= item.serviceId %>" data-label="<%= item.label %>" data-price="<%= item.priceCop %>">Agregar al carrito</button>
+            <% } %>
+          </article>
+          <% }) %>
+        </div>
+      </section>
+
+      <section class="service-section">
+        <div class="section-head">
+          <h2><%= services.farming.title %></h2>
+        </div>
+        <div class="cards-inline farming-list">
+          <% services.farming.items.forEach((item) => { %>
+          <article class="mini-card farming-card <%= item.isAvailable ? '' : 'is-disabled' %>" data-service-id="<%= item.serviceId %>" data-price="<%= item.priceCop || 0 %>" data-books-price="<%= item.withBooksPriceCop || 0 %>">
+            <h3><%= item.label %></h3>
+            <p class="farming-price">
+              $ <span class="js-farm-price-cop"><%= item.priceCopFormatted || '-' %></span> COP
+            </p>
+            <p class="farming-price">
+              $ <span class="js-farm-price-usd"><%= item.priceUsdFormatted || '-' %></span> USD
+            </p>
+            <% if (item.hasOwnedCheck) { %>
+            <label class="check-line">
+              <input class="js-owned-weapon" type="checkbox" />
+              Tengo el arma (precio variable: contactar asesor)
+            </label>
+            <p class="contact-note hidden"><%= item.ownedNote %></p>
+            <% } %>
+            <% if (item.hasBooksCheck) { %>
+            <label class="check-line">
+              <input class="js-have-books" type="checkbox" />
+              Tengo libros (aplica tarifa reducida)
+            </label>
+            <p class="small-note">Con libros: $ <%= item.withBooksPriceCopFormatted %> COP | $ <%= item.withBooksPriceUsdFormatted %> USD</p>
+            <% } %>
+            <% if (item.priceCop) { %>
+            <button class="btn-secondary js-add-cart" data-service-id="<%= item.serviceId %>" data-label="<%= item.label %>" data-price="<%= item.priceCop %>">Agregar al carrito</button>
+            <% } %>
+          </article>
+          <% }) %>
+        </div>
+      </section>
+
+      <section class="service-section">
+        <div class="section-head">
+          <h2><%= services.maintenance.title %></h2>
+        </div>
+        <div class="cards-inline">
+          <% services.maintenance.items.forEach((item) => { %>
+          <article class="mini-card <%= item.isAvailable ? '' : 'is-disabled' %>">
+            <h3><%= item.label %></h3>
+            <p>$ <%= item.priceCopFormatted %> COP</p>
+            <p>$ <%= item.priceUsdFormatted %> USD</p>
+            <button class="btn-secondary js-add-cart" data-service-id="<%= item.serviceId %>" data-label="<%= item.label %>" data-price="<%= item.priceCop %>">Agregar al carrito</button>
+          </article>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>Skirk's Boost Service | Servicios personalizados para cuentas de Genshin Impact</p>
+      </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

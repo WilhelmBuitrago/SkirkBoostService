@@ -1,0 +1,19 @@
+{
+  "name": "skirk-boost-service",
+  "version": "1.0.0",
+  "description": "Skirk's Boost Service - Microservicios frontend + api + postgres",
+  "private": true,
+  "scripts": {
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": [
+    "genshin",
+    "skirk",
+    "service",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT"
+}

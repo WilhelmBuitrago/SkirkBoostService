@@ -1,0 +1,20 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 700'>
+  <defs>
+    <linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0%' stop-color='#0f1230'/>
+      <stop offset='55%' stop-color='#1f2f66'/>
+      <stop offset='100%' stop-color='#3b3add'/>
+    </linearGradient>
+    <radialGradient id='halo' cx='0.8' cy='0.2' r='0.7'>
+      <stop offset='0%' stop-color='#89f2f8' stop-opacity='0.48'/>
+      <stop offset='100%' stop-color='#89f2f8' stop-opacity='0'/>
+    </radialGradient>
+  </defs>
+  <rect width='1200' height='700' fill='url(#bg)'/>
+  <rect width='1200' height='700' fill='url(#halo)'/>
+  <g fill='none' stroke='#89f2f8' stroke-opacity='0.18'>
+    <path d='M0,540 C260,450 480,630 760,510 C940,430 1050,480 1200,430' stroke-width='5'/>
+    <path d='M0,590 C200,530 460,650 740,560 C950,495 1100,560 1200,510' stroke-width='3'/>
+  </g>
+  <text x='70' y='615' fill='#eef7ff' font-size='68' font-family='Segoe UI, Tahoma, sans-serif'>sumeru-selva</text>
+</svg>

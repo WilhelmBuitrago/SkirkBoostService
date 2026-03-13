@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-api-base-url="<%= apiBaseUrl %>">
+    <%- include('partials/topbar', { apiBaseUrl }) %>
+    <main class="container not-found">
+      <h1><%= pageTitle %></h1>
+      <p><%= message %></p>
+      <a href="/" class="btn-primary">Regresar al inicio</a>
+    </main>
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body
+    data-zone-name="<%= zone.name %>"
+    data-zone-service-id="<%= zone.serviceId %>"
+    data-zone-id="<%= zone.id %>"
+    data-zone-base-cop="<%= zone.basePriceCop %>"
+    data-exchange-rate="<%= exchangeRate %>"
+    data-zone-available="<%= zone.isAvailable ? 'true' : 'false' %>"
+    data-api-base-url="<%= apiBaseUrl %>"
+    data-platform-status="<%= platformStatus %>"
+  >
+    <%- include('partials/topbar', { apiBaseUrl }) %>
+    <main class="container detail-layout">
+      <a class="back-link" href="/">Volver al inicio</a>
+
+      <article class="detail-card">
+        <div class="detail-image" style="background-image: linear-gradient(180deg, rgba(59,58,221,0.30), rgba(137,242,248,0.20)), url('/assets/zones/<%= zone.image %>');"></div>
+
+        <section class="detail-content">
+          <h1><%= zone.name %></h1>
+          <p class="detail-subtitle">Gestion de servicio de exploracion</p>
+          <% if (!zone.isAvailable) { %>
+          <p class="service-offline">Este servicio esta deshabilitado por estado de plataforma.</p>
+          <% } %>
+
+          <div class="price-box">
+            <p>
+              Base exploracion:
+              <strong>$ <%= zone.basePriceCopFormatted %> COP</strong>
+              <span>| $ <%= zone.basePriceUsdFormatted %> USD</span>
+            </p>
+            <% if (zone.missionBundleTotalCop) { %>
+            <p class="small-note">
+              Total referencial con todas las misiones: $ <%= zone.missionBundleTotalCopFormatted %> COP |
+              $ <%= zone.missionBundleTotalUsdFormatted %> USD
+            </p>
+            <% } %>
+          </div>
+
+          <% if (zone.missionOptions.length > 0) { %>
+          <section class="mission-selector" id="mission-selector">
+            <h2>Misiones adicionales</h2>
+            <p>Selecciona las misiones para sumar al precio total.</p>
+            <div class="checks">
+              <% zone.missionOptions.forEach((mission) => { %>
+              <label class="check-line">
+                <input
+                  type="checkbox"
+                  class="js-mission"
+                  data-price="<%= mission.priceCop %>"
+                  data-mission-name="<%= mission.name %>"
+                />
+                <%= mission.name %> (+$ <%= formatCop(mission.priceCop) %> COP | +$ <%= formatUsd(convertCopToUsd(mission.priceCop)) %> USD)
+              </label>
+              <% }) %>
+            </div>
+          </section>
+          <% } %>
+
+          <section class="total-box">
+            <h2>Total actual</h2>
+            <p class="big-price">$ <span id="total-cop"><%= zone.basePriceCopFormatted %></span> COP</p>
+            <p class="big-price">$ <span id="total-usd"><%= zone.basePriceUsdFormatted %></span> USD</p>
+          </section>
+
+          <button id="confirm-btn" class="btn-primary">Confirmar servicio</button>
+          <button
+            id="add-cart-zone-btn"
+            class="btn-secondary"
+            data-service-id="<%= zone.serviceId %>"
+            data-label="Exploracion - <%= zone.name %>"
+            data-price="<%= zone.basePriceCop %>"
+            type="button"
+          >
+            Agregar al carrito
+          </button>
+        </section>
+      </article>
+    </main>
+
+    <script src="/js/zone-detail.js"></script>
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

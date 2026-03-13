@@ -1,0 +1,64 @@
+services:
+  database:
+    build:
+      context: ./database
+    container_name: skirk-database
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-skirk_boost}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-skirk_boost}"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    ports:
+      - "5432:5432"
+
+  api:
+    build:
+      context: ./api
+    container_name: skirk-api
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-skirk_boost}
+      SESSION_SECRET: ${SESSION_SECRET:-change_me_session_secret}
+      PEPPER: ${PEPPER:-change_me_pepper_value}
+      USD_VALUE: ${USD_VALUE:-2857}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:3000}
+      RUNTIME_CONFIG_PATH: /app/data/runtime-config.json
+      ZONES_CONFIG_PATH: /app/data/exploration-zones.json
+      SERVICES_CONFIG_PATH: /app/data/services.json
+    volumes:
+      - ./api/data:/app/data
+      - ./api/config:/app/config
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: skirk-frontend
+    environment:
+      PORT: 3000
+      API_BASE_URL: http://api:4000
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:4000}
+      USD_VALUE: ${USD_VALUE:-2857}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:

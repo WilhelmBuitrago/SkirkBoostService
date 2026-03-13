@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-api-base-url="<%= apiBaseUrl %>">
+    <%- include('partials/topbar', { apiBaseUrl }) %>
+
+    <main class="container main-content">
+      <section class="service-section">
+        <h1>Configuracion de plataforma</h1>
+        <div id="status-indicator" class="status-indicator status-green">ACTIVA</div>
+
+        <div class="status-actions">
+          <button class="btn-secondary js-status" data-value="ACTIVA">Activa</button>
+          <button class="btn-secondary js-status" data-value="PARCIAL">Parcial</button>
+          <button class="btn-secondary js-status" data-value="NO_ACTIVA">No activa</button>
+        </div>
+      </section>
+
+      <section class="service-section">
+        <h2>Servicios deshabilitados en modo parcial</h2>
+        <input id="service-search" class="text-input" placeholder="Buscar servicio..." />
+        <div id="service-checklist" class="cards-inline"></div>
+      </section>
+
+      <section class="service-section">
+        <h2>Edicion de precios</h2>
+        <div id="price-editor" class="price-editor"></div>
+      </section>
+
+      <p id="config-message" class="small-note"></p>
+    </main>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

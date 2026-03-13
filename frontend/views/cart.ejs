@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-api-base-url="<%= apiBaseUrl %>" data-exchange-rate="<%= exchangeRate %>">
+    <%- include('partials/topbar', { apiBaseUrl }) %>
+
+    <main class="container main-content">
+      <section class="service-section">
+        <h1>Carrito de servicios</h1>
+        <div id="cart-items" class="cards-inline"></div>
+      </section>
+
+      <section class="service-section">
+        <h2>Resumen</h2>
+        <p>Subtotal COP: <strong id="subtotal-cop">0</strong></p>
+        <p>Subtotal USD: <strong id="subtotal-usd">0.00</strong></p>
+        <p>Total COP: <strong id="total-cop">0</strong></p>
+        <p>Total USD: <strong id="total-usd">0.00</strong></p>
+      </section>
+
+      <section class="service-section">
+        <h2>Datos de contacto y pago</h2>
+        <form id="checkout-form" class="stack-form">
+          <label>
+            Metodo de contacto
+            <select name="contactMethod" required>
+              <option value="">Seleccionar...</option>
+              <option value="TikTok">TikTok</option>
+              <option value="Instagram">Instagram</option>
+              <option value="Discord">Discord</option>
+            </select>
+          </label>
+          <label>
+            Metodo de pago
+            <select name="paymentMethod" required>
+              <option value="">Seleccionar...</option>
+              <option value="Nequi">Nequi</option>
+              <option value="PayPal">PayPal</option>
+            </select>
+          </label>
+          <button class="btn-primary" type="submit">Guardar temporalmente</button>
+        </form>
+        <p id="checkout-message" class="small-note"></p>
+      </section>
+    </main>
+
+    <script src="/js/cart.js"></script>
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>
