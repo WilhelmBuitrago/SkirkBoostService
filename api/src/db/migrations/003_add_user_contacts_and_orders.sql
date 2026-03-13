@@ -10,7 +10,8 @@ DROP CONSTRAINT IF EXISTS chk_usuarios_email_por_rol;
 
 ALTER TABLE usuarios
 ADD CONSTRAINT chk_usuarios_email_por_rol
-CHECK (rol = 'administrador' OR email IS NOT NULL);
+CHECK (rol = 'administrador' OR email IS NOT NULL)
+NOT VALID;
 
 CREATE TABLE IF NOT EXISTS usuario_contactos (
   id SERIAL PRIMARY KEY,

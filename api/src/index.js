@@ -165,6 +165,15 @@ app.get('/health', async (_req, res) => {
   }
 });
 
+app.get('/', async (_req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ ok: true, service: 'api', status: 'operativa' });
+  } catch (_error) {
+    res.status(503).json({ ok: false, service: 'api', status: 'db_down' });
+  }
+});
+
 app.use('/auth', authRoutes);
 app.use('/catalog', catalogRoutes);
 app.use('/admin', adminRoutes);
