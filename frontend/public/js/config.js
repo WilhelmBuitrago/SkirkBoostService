@@ -5,10 +5,14 @@
   const checklistContainer = document.getElementById('service-checklist');
   const priceEditor = document.getElementById('price-editor');
   const searchInput = document.getElementById('service-search');
+  const priceSearchInput = document.getElementById('price-search');
+  const usersSearchInput = document.getElementById('users-search');
+  const usersTableBody = document.getElementById('users-table-body');
   const message = document.getElementById('config-message');
 
   let currentConfig = null;
   let allServices = [];
+  let allUsers = [];
 
   function formatCop(value) {
     return new Intl.NumberFormat('es-CO').format(value);
@@ -118,10 +122,13 @@
       });
   }
 
-  function renderPriceEditor() {
+  function renderPriceEditor(filterText) {
+    const normalizedFilter = (filterText || '').trim().toLowerCase();
     priceEditor.innerHTML = '';
 
-    allServices.forEach((service) => {
+    allServices
+      .filter((service) => service.label.toLowerCase().includes(normalizedFilter))
+      .forEach((service) => {
       const row = document.createElement('div');
       row.className = 'price-row';
 
@@ -165,6 +172,164 @@
     });
   }
 
+  function formatDate(value) {
+    if (!value) {
+      return '-';
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return '-';
+    }
+
+    return parsed.toLocaleString('es-CO');
+  }
+
+  async function updateUser(userId, payload) {
+    const response = await fetch(`${apiBaseUrl}/admin/users/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'No fue posible actualizar el usuario');
+    }
+
+    return data.user;
+  }
+
+  async function deleteUser(userId) {
+    const response = await fetch(`${apiBaseUrl}/admin/users/${userId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'No fue posible eliminar el usuario');
+    }
+
+    return data;
+  }
+
+  function renderUsersTable(filterText) {
+    if (!usersTableBody) {
+      return;
+    }
+
+    const normalizedFilter = (filterText || '').trim().toLowerCase();
+    usersTableBody.innerHTML = '';
+
+    allUsers
+      .filter((entry) => {
+        if (!normalizedFilter) {
+          return true;
+        }
+
+        return (
+          String(entry.usuario || '').toLowerCase().includes(normalizedFilter) ||
+          String(entry.email || '').toLowerCase().includes(normalizedFilter) ||
+          String(entry.role || '').toLowerCase().includes(normalizedFilter)
+        );
+      })
+      .forEach((entry) => {
+        const row = document.createElement('tr');
+
+        const idCell = document.createElement('td');
+        idCell.textContent = String(entry.id);
+
+        const userCell = document.createElement('td');
+        const userInput = document.createElement('input');
+        userInput.className = 'text-input users-input';
+        userInput.value = entry.usuario || '';
+        userCell.appendChild(userInput);
+
+        const emailCell = document.createElement('td');
+        const emailInput = document.createElement('input');
+        emailInput.className = 'text-input users-input';
+        emailInput.value = entry.email || '';
+        emailCell.appendChild(emailInput);
+
+        const roleCell = document.createElement('td');
+        const roleSelect = document.createElement('select');
+        roleSelect.className = 'text-input users-input';
+        const userOption = document.createElement('option');
+        userOption.value = 'usuario';
+        userOption.textContent = 'usuario';
+        const adminOption = document.createElement('option');
+        adminOption.value = 'administrador';
+        adminOption.textContent = 'administrador';
+        roleSelect.appendChild(userOption);
+        roleSelect.appendChild(adminOption);
+        roleSelect.value = entry.role;
+        roleCell.appendChild(roleSelect);
+
+        const createdCell = document.createElement('td');
+        createdCell.textContent = formatDate(entry.createdAt);
+
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'users-actions';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'btn-secondary';
+        saveBtn.textContent = 'Guardar';
+        saveBtn.addEventListener('click', async () => {
+          try {
+            const updated = await updateUser(entry.id, {
+              usuario: userInput.value,
+              email: emailInput.value,
+              role: roleSelect.value
+            });
+
+            const index = allUsers.findIndex((item) => item.id === entry.id);
+            if (index >= 0) {
+              allUsers[index] = updated;
+            }
+            showMessage('Usuario actualizado.', false);
+            renderUsersTable(usersSearchInput ? usersSearchInput.value : '');
+          } catch (error) {
+            showMessage(error.message, true);
+          }
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn-secondary';
+        deleteBtn.textContent = 'Eliminar';
+        deleteBtn.addEventListener('click', async () => {
+          const accepted = window.confirm(`Eliminar usuario ${entry.usuario}?`);
+          if (!accepted) {
+            return;
+          }
+
+          try {
+            await deleteUser(entry.id);
+            allUsers = allUsers.filter((item) => item.id !== entry.id);
+            showMessage('Usuario eliminado.', false);
+            renderUsersTable(usersSearchInput ? usersSearchInput.value : '');
+          } catch (error) {
+            showMessage(error.message, true);
+          }
+        });
+
+        actionsCell.appendChild(saveBtn);
+        actionsCell.appendChild(deleteBtn);
+
+        row.appendChild(idCell);
+        row.appendChild(userCell);
+        row.appendChild(emailCell);
+        row.appendChild(roleCell);
+        row.appendChild(createdCell);
+        row.appendChild(actionsCell);
+
+        usersTableBody.appendChild(row);
+      });
+  }
+
   async function loadConfig() {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/config`, {
@@ -179,8 +344,10 @@
       currentConfig = data;
       setIndicator(data.runtimeConfig.platformStatus);
       allServices = flattenServices(data.catalog);
+      allUsers = Array.isArray(data.users) ? data.users : [];
       renderChecklist('');
-      renderPriceEditor();
+      renderPriceEditor('');
+      renderUsersTable('');
     } catch (error) {
       showMessage(error.message, true);
       setTimeout(() => {
@@ -219,6 +386,18 @@
   searchInput.addEventListener('input', () => {
     renderChecklist(searchInput.value);
   });
+
+  if (priceSearchInput) {
+    priceSearchInput.addEventListener('input', () => {
+      renderPriceEditor(priceSearchInput.value);
+    });
+  }
+
+  if (usersSearchInput) {
+    usersSearchInput.addEventListener('input', () => {
+      renderUsersTable(usersSearchInput.value);
+    });
+  }
 
   loadConfig();
 })();

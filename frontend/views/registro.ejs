@@ -11,19 +11,19 @@
 
     <main class="container auth-layout auth-layout--single">
       <section class="service-section auth-card">
-        <h2>Ingresar</h2>
-        <form id="login-form" class="stack-form">
-          <label>Correo o usuario (solo admin) <input name="identifier" required /></label>
-          <label>Contrasena <input name="password" type="password" required /></label>
-          <p class="small-note auth-note">Aun no tienes una cuenta? <a href="/registro">Registrate aqui</a></p>
-          <button type="submit" class="btn-primary">Ingresar</button>
+        <h2>Registrar - Paso 1</h2>
+        <p class="small-note">Ingresa tu correo y contrasena para continuar.</p>
+        <form id="register-step1-form" class="stack-form">
+          <label>Correo <input name="email" type="email" required /></label>
+          <label>Contrasena <input name="password" type="password" minlength="8" required /></label>
+          <button type="submit" class="btn-primary">Continuar</button>
         </form>
       </section>
 
-      <p id="auth-message" class="small-note"></p>
+      <p id="register-step1-message" class="small-note"></p>
     </main>
 
-    <script src="/js/auth.js"></script>
+    <script src="/js/register-step1.js"></script>
     <script src="/js/session-ui.js"></script>
   </body>
 </html>

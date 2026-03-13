@@ -1,7 +1,6 @@
 (function () {
   const apiBaseUrl = document.body.dataset.apiBaseUrl;
   const loginForm = document.getElementById('login-form');
-  const registerForm = document.getElementById('register-form');
   const message = document.getElementById('auth-message');
 
   function showMessage(text, isError) {
@@ -34,13 +33,17 @@
     return;
   }
 
+  if (!loginForm) {
+    return;
+  }
+
   loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const formData = new FormData(loginForm);
 
     try {
       const data = await postJson(`${apiBaseUrl}/auth/login`, {
-        usuario: formData.get('usuario'),
+        identifier: formData.get('identifier'),
         password: formData.get('password')
       });
 
@@ -50,22 +53,6 @@
       } else {
         window.location.href = '/';
       }
-    } catch (error) {
-      showMessage(error.message, true);
-    }
-  });
-
-  registerForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(registerForm);
-
-    try {
-      await postJson(`${apiBaseUrl}/auth/register`, {
-        usuario: formData.get('usuario'),
-        password: formData.get('password')
-      });
-      showMessage('Cuenta cliente creada e inicio de sesion correcto.', false);
-      window.location.href = '/';
     } catch (error) {
       showMessage(error.message, true);
     }

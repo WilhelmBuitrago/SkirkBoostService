@@ -49,8 +49,16 @@
   const missionChecks = document.querySelectorAll('.js-mission');
   const totalCop = document.getElementById('total-cop');
   const totalUsd = document.getElementById('total-usd');
-  const confirmBtn = document.getElementById('confirm-btn');
   const addCartBtn = document.getElementById('add-cart-zone-btn');
+  const zoneCartMessage = document.getElementById('zone-cart-message');
+
+  function showZoneMessage(text, isError) {
+    if (!zoneCartMessage) {
+      return;
+    }
+    zoneCartMessage.textContent = text;
+    zoneCartMessage.style.color = isError ? '#ff8b8b' : '#89f2f8';
+  }
 
   function getSelectedMissionNames() {
     return Array.from(missionChecks)
@@ -79,28 +87,10 @@
 
   calculateTotal();
 
-  if (confirmBtn) {
-    confirmBtn.addEventListener('click', () => {
-      if (!zoneAvailable) {
-        window.alert('Este servicio no esta disponible por estado de plataforma.');
-        return;
-      }
-
-      const currentTotal = calculateTotal();
-      const selectedMissions = getSelectedMissionNames();
-      const missionLabel = selectedMissions ? ` | Misiones: ${selectedMissions}` : '';
-      window.alert(
-        `Solicitud confirmada para ${zoneData.name}. Total: $ ${formatCop(currentTotal)} COP ($ ${formatUsd(
-          currentTotal / Number(zoneData.exchangeRate || 2857)
-        )} USD)${missionLabel}`
-      );
-    });
-  }
-
   if (addCartBtn) {
     addCartBtn.addEventListener('click', () => {
       if (!zoneAvailable) {
-        window.alert('Este servicio no esta disponible por estado de plataforma.');
+        showZoneMessage('Este servicio no esta disponible por estado de plataforma.', true);
         return;
       }
 
@@ -114,7 +104,7 @@
         priceCop: currentTotal
       });
       saveCart(current);
-      window.alert('Exploracion agregada al carrito.');
+      showZoneMessage('Exploracion agregada al carrito.', false);
     });
   }
 })();

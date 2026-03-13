@@ -268,7 +268,25 @@ app.get('/mantenimiento', async (_req, res, next) => {
 app.get('/login', async (_req, res) => {
   const platformStatus = await fetchPlatformStatus();
   res.render('login', {
-    pageTitle: 'Login',
+    pageTitle: 'Ingresar',
+    apiBaseUrl: PUBLIC_API_BASE_URL,
+    platformStatus
+  });
+});
+
+app.get('/registro', async (_req, res) => {
+  const platformStatus = await fetchPlatformStatus();
+  res.render('registro', {
+    pageTitle: 'Registrar - Paso 1',
+    apiBaseUrl: PUBLIC_API_BASE_URL,
+    platformStatus
+  });
+});
+
+app.get('/registro-contacto', async (_req, res) => {
+  const platformStatus = await fetchPlatformStatus();
+  res.render('registro-contacto', {
+    pageTitle: 'Registrar - Paso 2',
     apiBaseUrl: PUBLIC_API_BASE_URL,
     platformStatus
   });

@@ -85,13 +85,11 @@
     button.addEventListener('click', () => {
       const card = button.closest('.is-disabled');
       if (card) {
-        window.alert('Este servicio no esta disponible en el estado actual.');
         return;
       }
 
       const priceCop = Number(button.dataset.price || 0);
       if (!Number.isFinite(priceCop) || priceCop <= 0) {
-        window.alert('Este servicio requiere cotizacion manual.');
         return;
       }
 
@@ -100,8 +98,6 @@
         label: button.dataset.label,
         priceCop
       });
-
-      window.alert('Servicio agregado al carrito.');
     });
   });
 })();

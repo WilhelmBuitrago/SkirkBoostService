@@ -28,6 +28,7 @@
     }
 
     const loginLink = document.getElementById('login-link');
+    const registerLink = document.getElementById('register-link');
     const logoutBtn = document.getElementById('logout-btn');
     const configLink = document.getElementById('config-link');
     const sessionUser = document.getElementById('session-user');
@@ -52,6 +53,9 @@
       if (loginLink) {
         loginLink.classList.add('hidden');
       }
+      if (registerLink) {
+        registerLink.classList.add('hidden');
+      }
       if (logoutBtn) {
         logoutBtn.classList.remove('hidden');
       }
@@ -71,6 +75,9 @@
     } catch (_error) {
       if (sessionUser) {
         sessionUser.textContent = 'Invitado';
+      }
+      if (registerLink) {
+        registerLink.classList.remove('hidden');
       }
     }
   }

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body data-api-base-url="<%= apiBaseUrl %>" data-platform-status="<%= platformStatus %>">
+    <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
+
+    <main class="container auth-layout auth-layout--single">
+      <section class="service-section auth-card">
+        <h2>Registrar - Paso 2</h2>
+        <p class="small-note">Completa tu nombre de usuario y al menos una plataforma de contacto.</p>
+        <form id="register-step2-form" class="stack-form">
+          <label>Nombre de usuario <input name="usuario" required /></label>
+
+          <fieldset class="contact-fieldset">
+            <legend>Plataformas de contacto (minimo una)</legend>
+            <label>WhatsApp <input name="whatsapp" placeholder="+57 ..." /></label>
+            <label>TikTok <input name="tiktok" placeholder="@usuario" /></label>
+            <label>Discord <input name="discord" placeholder="usuario#0000" /></label>
+            <label>Instagram <input name="instagram" placeholder="@usuario" /></label>
+          </fieldset>
+
+          <button type="submit" class="btn-primary">Crear cuenta</button>
+        </form>
+      </section>
+
+      <p id="register-step2-message" class="small-note"></p>
+    </main>
+
+    <script src="/js/register-step2.js"></script>
+    <script src="/js/session-ui.js"></script>
+  </body>
+</html>

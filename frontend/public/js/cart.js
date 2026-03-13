@@ -1,4 +1,5 @@
 (function () {
+  const apiBaseUrl = document.body.dataset.apiBaseUrl;
   const exchangeRateRaw = Number(document.body.dataset.exchangeRate || 2857);
   const exchangeRate = Number.isFinite(exchangeRateRaw) && exchangeRateRaw > 0 ? exchangeRateRaw : 2857;
 
@@ -8,7 +9,13 @@
   const totalCopLabel = document.getElementById('total-cop');
   const totalUsdLabel = document.getElementById('total-usd');
   const checkoutForm = document.getElementById('checkout-form');
+  const confirmButton = document.getElementById('confirm-order-btn');
+  const contactoSelect = document.getElementById('contacto-select');
   const checkoutMessage = document.getElementById('checkout-message');
+  const checkoutSummary = document.getElementById('checkout-summary');
+
+  let currentSession = null;
+  let currentContacts = [];
 
   function formatCop(value) {
     return new Intl.NumberFormat('es-CO').format(value);
@@ -40,21 +47,112 @@
     document.dispatchEvent(new CustomEvent('skirk-cart-updated'));
   }
 
-  function getCheckoutInfo() {
-    const raw = sessionStorage.getItem('skirk-checkout');
-    if (!raw) {
-      return null;
+  function showMessage(text, isError) {
+    checkoutMessage.textContent = text;
+    checkoutMessage.style.color = isError ? '#ff8b8b' : '#89f2f8';
+  }
+
+  function setConfirmEnabled(enabled) {
+    if (!confirmButton) {
+      return;
+    }
+    confirmButton.disabled = !enabled;
+  }
+
+  function formatPlatform(value) {
+    const map = {
+      whatsapp: 'WhatsApp',
+      tiktok: 'TikTok',
+      discord: 'Discord',
+      instagram: 'Instagram'
+    };
+
+    return map[value] || value;
+  }
+
+  function renderContactOptions() {
+    if (!contactoSelect) {
+      return;
     }
 
-    try {
-      return JSON.parse(raw);
-    } catch (_error) {
-      return null;
+    contactoSelect.innerHTML = '<option value="">Seleccionar...</option>';
+    currentContacts.forEach((entry) => {
+      const option = document.createElement('option');
+      option.value = String(entry.id);
+      option.textContent = `${formatPlatform(entry.plataforma)}: ${entry.contacto}${entry.es_principal ? ' (Principal)' : ''}`;
+      contactoSelect.appendChild(option);
+    });
+
+    const principal = currentContacts.find((entry) => entry.es_principal) || currentContacts[0];
+    if (principal) {
+      contactoSelect.value = String(principal.id);
     }
   }
 
-  function setCheckoutInfo(info) {
-    sessionStorage.setItem('skirk-checkout', JSON.stringify(info));
+  function renderSummary(order) {
+    if (!checkoutSummary) {
+      return;
+    }
+
+    const lines = [];
+    lines.push(`Confirmacion #${order.id}`);
+    lines.push(`Correo: ${order.email}`);
+    lines.push(`Usuario: ${order.usuario}`);
+    lines.push(`Contacto: ${formatPlatform(order.contacto.plataforma)} - ${order.contacto.contacto}`);
+    lines.push(`Metodo de pago: ${order.metodoPago}`);
+    lines.push(`Servicios:`);
+    order.services.forEach((service) => {
+      lines.push(`- ${service.label} ($ ${formatCop(service.priceCop)} COP)`);
+    });
+    lines.push(`Total: $ ${formatCop(order.totalCop)} COP`);
+
+    checkoutSummary.textContent = lines.join('\n');
+    checkoutSummary.classList.remove('hidden');
+  }
+
+  async function loadSessionState() {
+    if (!apiBaseUrl || !/^https?:\/\//.test(apiBaseUrl)) {
+      setConfirmEnabled(false);
+      showMessage('Configuracion API invalida.', true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/auth/me`, { credentials: 'include' });
+      if (!response.ok) {
+        throw new Error('No autenticado');
+      }
+
+      const data = await response.json();
+      if (!data.authenticated) {
+        throw new Error('No autenticado');
+      }
+
+      currentSession = data;
+      currentContacts = Array.isArray(data.contacts) ? data.contacts : [];
+      renderContactOptions();
+
+      if (!data.profileComplete) {
+        setConfirmEnabled(false);
+        showMessage('Tu perfil esta incompleto. Debes registrar correo y al menos un contacto.', true);
+        return;
+      }
+
+      if (currentContacts.length < 1) {
+        setConfirmEnabled(false);
+        showMessage('No tienes contactos para confirmar el pedido.', true);
+        return;
+      }
+
+      setConfirmEnabled(true);
+      showMessage('Listo para confirmar.', false);
+    } catch (_error) {
+      currentSession = null;
+      currentContacts = [];
+      renderContactOptions();
+      setConfirmEnabled(false);
+      showMessage('Debes iniciar sesion para confirmar.', true);
+    }
   }
 
   function render() {
@@ -103,45 +201,71 @@
     totalUsdLabel.textContent = formatUsd(subtotalUsd);
   }
 
-  checkoutForm.addEventListener('submit', (event) => {
+  checkoutForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
+    if (!currentSession || !currentSession.authenticated) {
+      setConfirmEnabled(false);
+      showMessage('Debes iniciar sesion para confirmar.', true);
+      return;
+    }
+
+    if (!currentSession.profileComplete) {
+      setConfirmEnabled(false);
+      showMessage('Tu perfil esta incompleto. Completa tus datos para confirmar.', true);
+      return;
+    }
+
     const formData = new FormData(checkoutForm);
-    const contactMethod = formData.get('contactMethod');
-    const paymentMethod = formData.get('paymentMethod');
+    const contactoId = Number(formData.get('contactoId'));
+    const metodoPago = String(formData.get('metodoPago') || '').trim();
 
-    const allowedContact = new Set(['TikTok', 'Instagram', 'Discord']);
-    const allowedPayment = new Set(['Nequi', 'PayPal']);
-
-    if (!allowedContact.has(contactMethod)) {
-      checkoutMessage.textContent = 'Metodo de contacto invalido.';
-      checkoutMessage.style.color = '#ff8b8b';
+    const selectedContact = currentContacts.find((entry) => entry.id === contactoId);
+    if (!selectedContact) {
+      showMessage('Debes seleccionar un contacto valido.', true);
       return;
     }
 
-    if (!allowedPayment.has(paymentMethod)) {
-      checkoutMessage.textContent = 'Metodo de pago invalido.';
-      checkoutMessage.style.color = '#ff8b8b';
+    if (!['Nequi', 'PayPal'].includes(metodoPago)) {
+      showMessage('Metodo de pago invalido.', true);
       return;
     }
 
-    const payload = {
-      contactMethod,
-      paymentMethod,
-      updatedAt: new Date().toISOString(),
-      items: getCart()
-    };
+    const items = getCart();
+    if (items.length < 1) {
+      showMessage('Tu carrito esta vacio.', true);
+      return;
+    }
 
-    setCheckoutInfo(payload);
-    checkoutMessage.textContent = 'Informacion guardada temporalmente en esta sesion.';
-    checkoutMessage.style.color = '#89f2f8';
+    try {
+      setConfirmEnabled(false);
+      const response = await fetch(`${apiBaseUrl}/orders`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          servicios: items,
+          contactoId,
+          metodoPago
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'No se pudo confirmar la orden.');
+      }
+
+      showMessage('Orden confirmada correctamente.', false);
+      renderSummary(data.order);
+      saveCart([]);
+      render();
+      setConfirmEnabled(true);
+    } catch (error) {
+      setConfirmEnabled(true);
+      showMessage(error.message, true);
+    }
   });
 
-  const previousInfo = getCheckoutInfo();
-  if (previousInfo) {
-    checkoutForm.elements.contactMethod.value = previousInfo.contactMethod || '';
-    checkoutForm.elements.paymentMethod.value = previousInfo.paymentMethod || '';
-  }
-
   render();
+  loadSessionState();
 })();

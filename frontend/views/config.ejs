@@ -29,7 +29,28 @@
 
       <section class="service-section">
         <h2>Edicion de precios</h2>
+        <input id="price-search" class="text-input" placeholder="Buscar servicio para ajustar precio..." />
         <div id="price-editor" class="price-editor"></div>
+      </section>
+
+      <section class="service-section">
+        <h2>Usuarios registrados</h2>
+        <input id="users-search" class="text-input" placeholder="Buscar usuario/correo/rol..." />
+        <div class="users-table-wrap">
+          <table id="users-table" class="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Creado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <p id="config-message" class="small-note"></p>
