@@ -498,6 +498,16 @@ td {
   gap: 1rem;
 }
 
+.page-back-nav {
+  padding-top: 0.2rem;
+  margin-bottom: 0.9rem;
+}
+
+.page-back-nav--cart {
+  margin-top: -0.1rem;
+  margin-bottom: 1.2rem;
+}
+
 .detail-card {
   display: grid;
   grid-template-columns: 1.05fr 1fr;

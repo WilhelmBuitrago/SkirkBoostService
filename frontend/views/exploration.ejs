@@ -10,6 +10,9 @@
     <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
 
     <main class="container main-content">
+      <div class="page-back-nav">
+        <a class="back-link" href="/">Volver al inicio</a>
+      </div>
       <section class="service-section">
         <% const extraZoneIds = new Set([
           'espinadragon',
@@ -76,6 +79,8 @@
         </div>
       </section>
     </main>
+
+    <%- include('partials/footer') %>
 
     <script src="/js/session-ui.js"></script>
   </body>

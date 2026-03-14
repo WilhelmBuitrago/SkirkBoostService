@@ -10,6 +10,9 @@
     <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
 
     <main class="container main-content">
+      <div class="page-back-nav">
+        <a class="back-link" href="/">Volver al inicio</a>
+      </div>
       <div class="config-layout">
         <%- include('partials/config-sidebar', { activeConfigSection }) %>
 
@@ -21,6 +24,8 @@
         </section>
       </div>
     </main>
+
+    <%- include('partials/footer') %>
 
     <script src="/js/config-utils.js"></script>
     <script src="/js/config-servicios.js"></script>

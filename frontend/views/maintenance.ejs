@@ -10,7 +10,9 @@
     <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
 
     <main class="container main-content">
-      <a class="back-link" href="/">Volver al inicio</a>
+      <div class="page-back-nav">
+        <a class="back-link" href="/">Volver al inicio</a>
+      </div>
       <section class="service-section">
         <div class="section-head">
           <h1>Mantenimiento de cuenta</h1>
@@ -28,6 +30,8 @@
         </div>
       </section>
     </main>
+
+    <%- include('partials/footer') %>
 
     <script src="/js/main.js"></script>
     <script src="/js/session-ui.js"></script>

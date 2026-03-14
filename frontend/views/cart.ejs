@@ -15,6 +15,10 @@
         <div id="cart-items" class="cards-inline"></div>
       </section>
 
+      <div class="page-back-nav page-back-nav--cart">
+        <a class="btn-secondary" href="/exploracion">Seguir explorando servicios</a>
+      </div>
+
       <section class="service-section">
         <h2>Resumen</h2>
         <p>Subtotal COP: <strong id="subtotal-cop">0</strong></p>
@@ -46,6 +50,8 @@
         <div id="checkout-summary" class="summary-box hidden"></div>
       </section>
     </main>
+
+    <%- include('partials/footer') %>
 
     <script src="/js/cart.js"></script>
     <script src="/js/session-ui.js"></script>

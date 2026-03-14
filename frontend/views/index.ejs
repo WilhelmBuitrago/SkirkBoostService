@@ -15,10 +15,9 @@
         <p class="hero__subtitle">Genshin Impact Customer Service</p>
         <h1>Skirk's Boost Service</h1>
         <p class="hero__desc">
-          Selecciona un bloque principal para entrar a una pagina enfocada en ese servicio.
-          Moneda principal COP con conversion automatica a USD (1 USD = <%= exchangeRate %> COP).
+          Te ayudamos con el progreso de tu cuenta, desde misiones hasta farmeo de recursos. ¡Servicios personalizados para cada necesidad!
         </p>
-        <a class="btn-primary" href="/exploracion">Ir a exploracion</a>
+        <!-- <a class="btn-primary" href="/exploracion">Ir a exploracion</a> -->
       </div>
     </header>
 
@@ -26,7 +25,7 @@
       <section class="service-section">
         <div class="section-head">
           <h2>Servicios principales</h2>
-          <p>Home didactica con 6 opciones. Cada bloque te lleva a una pagina dedicada.</p>
+          <!-- <p>Home didactica con 6 opciones. Cada bloque te lleva a una pagina dedicada.</p> -->
         </div>
         <div class="service-grid">
           <% serviceCards.forEach((card) => { %>
@@ -36,7 +35,7 @@
               <h3><%= card.title %></h3>
               <p><%= card.description %></p>
               <div class="service-hub-card__meta"><%= card.meta %></div>
-              <span class="service-hub-card__action">Ver detalle</span>
+              <!-- <span class="service-hub-card__action">Ver detalle</span> -->
             </a>
           </article>
           <% }) %>
@@ -44,11 +43,7 @@
       </section>
     </main>
 
-    <footer class="footer">
-      <div class="container">
-        <p>Skirk's Boost Service | Servicios personalizados para cuentas de Genshin Impact</p>
-      </div>
-    </footer>
+    <%- include('partials/footer') %>
 
     <script src="/js/main.js"></script>
     <script src="/js/session-ui.js"></script>

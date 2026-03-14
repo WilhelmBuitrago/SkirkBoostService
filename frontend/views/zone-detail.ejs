@@ -18,7 +18,7 @@
   >
     <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
     <main class="container detail-layout">
-      <div class="back-links">
+      <div class="page-back-nav back-links">
         <a class="back-link" href="/exploracion">Volver</a>
         <a class="back-link" href="/">Volver al inicio</a>
       </div>
@@ -87,6 +87,8 @@
         </section>
       </article>
     </main>
+
+    <%- include('partials/footer') %>
 
     <script src="/js/zone-detail.js"></script>
     <script src="/js/session-ui.js"></script>
