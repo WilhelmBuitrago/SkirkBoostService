@@ -13,8 +13,7 @@
       { "label": "20 deseos", "priceCop": 50000 },
       {
         "label": "30 deseos",
-        "priceCop": null,
-        "note": "No disponible. Contactar con asesor."
+        "priceCop": null
       }
     ]
   },

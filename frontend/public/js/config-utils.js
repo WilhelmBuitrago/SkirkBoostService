@@ -70,10 +70,18 @@
     });
 
     catalog.services.wishFarming.lessThan50.forEach((item) => {
-      rows.push({ serviceId: item.serviceId, label: `Deseos <50%: ${item.label}`, priceCop: item.priceCop });
+      rows.push({
+        serviceId: item.serviceId,
+        label: `Farmeo de deseos - ${item.label} (Menos del 50% del mapa)`,
+        priceCop: item.priceCop
+      });
     });
     catalog.services.wishFarming.moreThan50.forEach((item) => {
-      rows.push({ serviceId: item.serviceId, label: `Deseos >50%: ${item.label}`, priceCop: item.priceCop });
+      rows.push({
+        serviceId: item.serviceId,
+        label: `Farmeo de deseos - ${item.label} (Mas del 50% del mapa)`,
+        priceCop: item.priceCop
+      });
     });
     catalog.services.missions.items.forEach((item) => {
       rows.push({ serviceId: item.serviceId, label: `Misiones: ${item.label}`, priceCop: item.priceCop || 0 });

@@ -10,68 +10,78 @@
     <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
 
     <main class="container main-content">
+      <%
+        const wishQuantities = [1, 10, 20, 30];
+        const extractQuantity = (label) => {
+          const match = String(label || '').match(/\d+/);
+          return match ? Number(match[0]) : null;
+        };
+        const wishOptions = { lessThan50: {}, moreThan50: {} };
+        wishFarming.lessThan50.forEach((item) => {
+          const quantity = extractQuantity(item.label);
+          if (!quantity) {
+            return;
+          }
+          wishOptions.lessThan50[String(quantity)] = {
+            serviceId: item.serviceId,
+            label: item.label,
+            priceCop: item.priceCop
+          };
+        });
+        wishFarming.moreThan50.forEach((item) => {
+          const quantity = extractQuantity(item.label);
+          if (!quantity) {
+            return;
+          }
+          wishOptions.moreThan50[String(quantity)] = {
+            serviceId: item.serviceId,
+            label: item.label,
+            priceCop: item.priceCop
+          };
+        });
+      %>
       <div class="page-back-nav">
         <a class="back-link" href="/">Volver al inicio</a>
       </div>
       <section class="service-section">
         <div class="section-head">
           <h1>Farmeo de deseos</h1>
-          <p>Tarifas separadas por progreso del mapa.</p>
+          <p>Elige la cantidad y el progreso de mapa para agregar el servicio al carrito.</p>
         </div>
-        <div class="columns-two">
-          <div class="price-table-wrap">
-            <h3>Menos del 50% del mapa</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Cantidad</th>
-                  <th>COP</th>
-                  <th>USD</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% wishFarming.lessThan50.forEach((item) => { %>
-                <tr class="<%= item.isAvailable ? '' : 'is-disabled' %>">
-                  <td><%= item.label %></td>
-                  <td><%= item.priceCopFormatted ? '$ ' + item.priceCopFormatted : '-' %></td>
-                  <td><%= item.priceUsdFormatted ? '$ ' + item.priceUsdFormatted : '-' %></td>
-                </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
-          <div class="price-table-wrap">
-            <h3>Mas del 50% del mapa</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Cantidad</th>
-                  <th>COP</th>
-                  <th>USD</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% wishFarming.moreThan50.forEach((item) => { %>
-                <tr class="<%= item.isAvailable ? '' : 'is-disabled' %>">
-                  <td><%= item.label %></td>
-                  <td><%= item.priceCopFormatted ? '$ ' + item.priceCopFormatted : 'Consultar' %></td>
-                  <td><%= item.priceUsdFormatted ? '$ ' + item.priceUsdFormatted : 'Consultar' %></td>
-                </tr>
-                <% if (item.note) { %>
-                <tr>
-                  <td colspan="3" class="note-cell"><%= item.note %></td>
-                </tr>
-                <% } %>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
+        <div class="cards-inline">
+          <article class="mini-card wish-farming-builder" data-wish-available="<%= wishFarming.isAvailable ? '1' : '0' %>">
+            <h3>Configurar servicio</h3>
+            <div class="wish-farming-controls">
+              <label class="wish-farming-field">
+                Cantidad
+                <select class="js-wish-quantity" aria-label="Seleccionar cantidad de deseos">
+                  <% wishQuantities.forEach((quantity) => { %>
+                  <option value="<%= quantity %>"><%= quantity %></option>
+                  <% }) %>
+                </select>
+              </label>
+              <label class="wish-farming-field">
+                Progreso del mapa
+                <select class="js-wish-map" aria-label="Seleccionar progreso del mapa">
+                  <option value="lessThan50">Menos del 50%</option>
+                  <option value="moreThan50">Mas del 50%</option>
+                </select>
+              </label>
+            </div>
+            <p class="wish-farming-price">Precio COP: <strong class="js-wish-price-cop">-</strong></p>
+            <p class="wish-farming-price">Precio USD: <strong class="js-wish-price-usd">-</strong></p>
+            <button class="btn-secondary js-add-cart js-add-cart-wish" type="button" disabled>
+              Agregar al carrito
+            </button>
+          </article>
         </div>
+        <script id="wish-farming-options" type="application/json"><%- JSON.stringify(wishOptions) %></script>
       </section>
     </main>
 
     <%- include('partials/footer') %>
 
+    <script src="/js/main.js"></script>
     <script src="/js/session-ui.js"></script>
   </body>
 </html>

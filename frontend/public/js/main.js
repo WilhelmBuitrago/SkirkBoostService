@@ -50,8 +50,74 @@
     }).format(value);
   }
 
+  function readWishOptions() {
+    const source = document.getElementById('wish-farming-options');
+    if (!source) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(source.textContent || '{}');
+      if (!parsed || typeof parsed !== 'object') {
+        return null;
+      }
+      return parsed;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function getWishMapText(mapValue) {
+    return mapValue === 'moreThan50' ? 'Mas del 50% del mapa' : 'Menos del 50% del mapa';
+  }
+
+  function initWishFarmingBuilder(rate) {
+    const options = readWishOptions();
+    if (!options) {
+      return;
+    }
+
+    document.querySelectorAll('.wish-farming-builder').forEach((card) => {
+      const quantitySelect = card.querySelector('.js-wish-quantity');
+      const mapSelect = card.querySelector('.js-wish-map');
+      const copNode = card.querySelector('.js-wish-price-cop');
+      const usdNode = card.querySelector('.js-wish-price-usd');
+      const addButton = card.querySelector('.js-add-cart-wish');
+      const isCardAvailable = card.dataset.wishAvailable !== '0';
+
+      if (!quantitySelect || !mapSelect || !copNode || !usdNode || !addButton) {
+        return;
+      }
+
+      function syncState() {
+        const quantity = String(quantitySelect.value || '');
+        const mapValue = String(mapSelect.value || 'lessThan50');
+        const mapEntries = options[mapValue] || {};
+        const selectedOption = mapEntries[quantity] || null;
+        const priceCop = Number(selectedOption ? selectedOption.priceCop : 0);
+        const hasPrice = isCardAvailable && Number.isFinite(priceCop) && priceCop > 0;
+        const quantityText = selectedOption && selectedOption.label ? selectedOption.label : `${quantity} deseos`;
+        const mapText = getWishMapText(mapValue);
+
+        copNode.textContent = hasPrice ? formatCop(priceCop) : '-';
+        usdNode.textContent = hasPrice ? formatUsd(priceCop / rate) : '-';
+
+        addButton.dataset.serviceId = hasPrice && selectedOption ? String(selectedOption.serviceId || '') : '';
+        addButton.dataset.price = hasPrice ? String(priceCop) : '';
+        addButton.dataset.label = `Farmeo de deseos - ${quantityText} (${mapText})`;
+        addButton.disabled = !hasPrice;
+      }
+
+      quantitySelect.addEventListener('change', syncState);
+      mapSelect.addEventListener('change', syncState);
+      syncState();
+    });
+  }
+
   const pageRate = document.body ? Number(document.body.dataset.exchangeRate) : NaN;
   const rate = Number.isFinite(pageRate) && pageRate > 0 ? pageRate : 2857;
+
+  initWishFarmingBuilder(rate);
 
   document.querySelectorAll('.farming-card').forEach((card) => {
     const baseCop = Number(card.dataset.price || 0);

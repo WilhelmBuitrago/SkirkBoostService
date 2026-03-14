@@ -438,6 +438,42 @@ td {
   color: var(--text-muted);
 }
 
+.wish-farming-builder {
+  max-width: 560px;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.wish-farming-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.wish-farming-field {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.wish-farming-field select {
+  border: 1px solid rgba(137, 242, 248, 0.25);
+  border-radius: 10px;
+  background: rgba(6, 10, 25, 0.88);
+  color: var(--text-main);
+  padding: 0.6rem 0.72rem;
+}
+
+.wish-farming-price {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.wish-farming-price strong {
+  color: var(--accent-ice);
+}
+
 .check-line {
   display: flex;
   gap: 0.52rem;
@@ -767,6 +803,10 @@ td {
   .session-menu__dropdown {
     left: 0;
     right: auto;
+  }
+
+  .wish-farming-controls {
+    grid-template-columns: 1fr;
   }
 }
 
