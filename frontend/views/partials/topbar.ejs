@@ -12,12 +12,20 @@
         <span class="cart-link__icon">Carrito</span>
         <span id="cart-count" class="cart-link__badge">0</span>
       </a>
-      <a href="/perfil" id="profile-link" class="topbar__link hidden">Perfil</a>
-      <a href="/config" id="config-link" class="topbar__link hidden">Config</a>
       <a href="/login" id="login-link" class="topbar__link">Ingresar</a>
       <a href="/registro" id="register-link" class="topbar__link">Registrar</a>
-      <button id="logout-btn" class="btn-secondary hidden" type="button">Logout</button>
-      <span id="session-user" class="topbar__user"></span>
+      <div id="session-menu" class="session-menu hidden">
+        <button
+          id="session-menu-toggle"
+          class="session-menu__toggle"
+          type="button"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          <span id="session-menu-label">Usuario</span>
+        </button>
+        <div id="session-menu-dropdown" class="session-menu__dropdown" role="menu"></div>
+      </div>
     </nav>
   </div>
 </header>

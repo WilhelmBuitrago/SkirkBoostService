@@ -1,0 +1,10 @@
+<aside class="config-sidebar">
+  <h2 class="config-sidebar__title">Panel de administrador</h2>
+  <nav class="config-sidebar__nav" aria-label="Secciones de configuracion">
+    <a href="/config" class="config-sidebar__link <%= activeConfigSection === 'inicio' ? 'is-active' : '' %>">Inicio</a>
+    <a href="/config/servicios-parciales" class="config-sidebar__link <%= activeConfigSection === 'servicios' ? 'is-active' : '' %>">Servicios deshabilitados en modo parcial</a>
+    <a href="/config/precios" class="config-sidebar__link <%= activeConfigSection === 'precios' ? 'is-active' : '' %>">Edicion de precios</a>
+    <a href="/config/usuarios" class="config-sidebar__link <%= activeConfigSection === 'usuarios' ? 'is-active' : '' %>">Usuarios registrados</a>
+    <a href="/config/pedidos" class="config-sidebar__link <%= activeConfigSection === 'pedidos' ? 'is-active' : '' %>">Pedidos</a>
+  </nav>
+</aside>

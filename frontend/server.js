@@ -292,13 +292,34 @@ app.get('/registro-contacto', async (_req, res) => {
   });
 });
 
-app.get('/config', async (_req, res) => {
+async function renderConfigPage(res, viewName, pageTitle, activeConfigSection) {
   const platformStatus = await fetchPlatformStatus();
-  res.render('config', {
-    pageTitle: 'Configuracion',
+  res.render(viewName, {
+    pageTitle,
     apiBaseUrl: PUBLIC_API_BASE_URL,
-    platformStatus
+    platformStatus,
+    activeConfigSection
   });
+}
+
+app.get('/config', async (_req, res) => {
+  await renderConfigPage(res, 'config', 'Configuracion', 'inicio');
+});
+
+app.get('/config/servicios-parciales', async (_req, res) => {
+  await renderConfigPage(res, 'config-servicios', 'Configuracion - Servicios parciales', 'servicios');
+});
+
+app.get('/config/precios', async (_req, res) => {
+  await renderConfigPage(res, 'config-precios', 'Configuracion - Edicion de precios', 'precios');
+});
+
+app.get('/config/usuarios', async (_req, res) => {
+  await renderConfigPage(res, 'config-usuarios', 'Configuracion - Usuarios', 'usuarios');
+});
+
+app.get('/config/pedidos', async (_req, res) => {
+  await renderConfigPage(res, 'config-pedidos', 'Configuracion - Pedidos', 'pedidos');
 });
 
 app.get('/carrito', async (_req, res) => {

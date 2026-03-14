@@ -29,10 +29,77 @@
 
     const loginLink = document.getElementById('login-link');
     const registerLink = document.getElementById('register-link');
-    const logoutBtn = document.getElementById('logout-btn');
-    const configLink = document.getElementById('config-link');
-    const profileLink = document.getElementById('profile-link');
-    const sessionUser = document.getElementById('session-user');
+    const sessionMenu = document.getElementById('session-menu');
+    const sessionMenuToggle = document.getElementById('session-menu-toggle');
+    const sessionMenuLabel = document.getElementById('session-menu-label');
+    const sessionMenuDropdown = document.getElementById('session-menu-dropdown');
+
+    function closeMenu() {
+      if (!sessionMenuDropdown || !sessionMenuToggle) {
+        return;
+      }
+
+      sessionMenuDropdown.classList.remove('is-open');
+      sessionMenuToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function openMenu() {
+      if (!sessionMenuDropdown || !sessionMenuToggle) {
+        return;
+      }
+
+      sessionMenuDropdown.classList.add('is-open');
+      sessionMenuToggle.setAttribute('aria-expanded', 'true');
+    }
+
+    function setMenuEntries(entries) {
+      if (!sessionMenuDropdown) {
+        return;
+      }
+
+      sessionMenuDropdown.innerHTML = '';
+
+      entries.forEach((entry) => {
+        if (entry.type === 'button') {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'session-menu__item';
+          button.textContent = entry.label;
+          button.addEventListener('click', entry.onClick);
+          sessionMenuDropdown.appendChild(button);
+          return;
+        }
+
+        const link = document.createElement('a');
+        link.href = entry.href;
+        link.className = 'session-menu__item';
+        link.textContent = entry.label;
+        sessionMenuDropdown.appendChild(link);
+      });
+    }
+
+    if (sessionMenuToggle && sessionMenuDropdown && sessionMenu) {
+      sessionMenuToggle.addEventListener('click', () => {
+        if (sessionMenuDropdown.classList.contains('is-open')) {
+          closeMenu();
+          return;
+        }
+
+        openMenu();
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!sessionMenu.contains(event.target)) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeMenu();
+        }
+      });
+    }
 
     try {
       const response = await fetch(`${apiBaseUrl}/auth/me`, {
@@ -48,40 +115,45 @@
         throw new Error('No session');
       }
 
-      if (sessionUser) {
-        sessionUser.textContent = `${data.user.usuario} (${data.user.role})`;
-      }
       if (loginLink) {
         loginLink.classList.add('hidden');
       }
       if (registerLink) {
         registerLink.classList.add('hidden');
       }
-      if (logoutBtn) {
-        logoutBtn.classList.remove('hidden');
-      }
-      if (profileLink) {
-        profileLink.classList.remove('hidden');
-      }
-      if (configLink && data.user.role === 'administrador') {
-        configLink.classList.remove('hidden');
+
+      if (sessionMenu && sessionMenuLabel) {
+        sessionMenuLabel.textContent = `${data.user.usuario} (${data.user.role})`;
+        sessionMenu.classList.remove('hidden');
       }
 
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
+      const menuEntries = [{ type: 'link', label: 'Perfil', href: '/perfil' }];
+      if (data.user.role === 'administrador') {
+        menuEntries.push({ type: 'link', label: 'Config', href: '/config' });
+      }
+
+      menuEntries.push({
+        type: 'button',
+        label: 'Logout',
+        onClick: async () => {
           await fetch(`${apiBaseUrl}/auth/logout`, {
             method: 'POST',
             credentials: 'include'
           });
           window.location.href = '/';
-        });
-      }
+        }
+      });
+
+      setMenuEntries(menuEntries);
     } catch (_error) {
-      if (sessionUser) {
-        sessionUser.textContent = 'Invitado';
+      if (sessionMenu) {
+        sessionMenu.classList.add('hidden');
       }
       if (registerLink) {
         registerLink.classList.remove('hidden');
+      }
+      if (loginLink) {
+        loginLink.classList.remove('hidden');
       }
     }
   }

@@ -92,6 +92,61 @@ h3 {
   font-size: 0.85rem;
 }
 
+.session-menu {
+  position: relative;
+}
+
+.session-menu__toggle {
+  border: 1px solid rgba(137, 242, 248, 0.35);
+  border-radius: 999px;
+  padding: 0.42rem 0.75rem;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.session-menu__toggle:hover {
+  border-color: var(--accent-ice);
+  color: var(--text-main);
+}
+
+.session-menu__dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.4rem);
+  min-width: 180px;
+  border: 1px solid rgba(137, 242, 248, 0.25);
+  border-radius: 12px;
+  background: rgba(5, 9, 23, 0.96);
+  box-shadow: var(--shadow-deep);
+  display: none;
+  z-index: 60;
+}
+
+.session-menu__dropdown.is-open {
+  display: grid;
+}
+
+.session-menu__item {
+  border: 0;
+  border-bottom: 1px solid rgba(137, 242, 248, 0.12);
+  background: transparent;
+  color: var(--text-main);
+  text-decoration: none;
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.session-menu__item:last-child {
+  border-bottom: 0;
+}
+
+.session-menu__item:hover {
+  background: rgba(137, 242, 248, 0.12);
+}
+
 .cart-link {
   position: relative;
   color: var(--text-main);
@@ -589,6 +644,58 @@ td {
   gap: 0.45rem;
 }
 
+.config-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.config-sidebar {
+  position: sticky;
+  top: 84px;
+  border: 1px solid rgba(137, 242, 248, 0.16);
+  border-radius: 16px;
+  background: rgba(10, 13, 30, 0.82);
+  box-shadow: var(--shadow-deep);
+  padding: 1rem;
+}
+
+.config-sidebar__title {
+  margin: 0 0 0.8rem;
+  font-size: 1rem;
+}
+
+.config-sidebar__nav {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.config-sidebar__link {
+  border: 1px solid rgba(137, 242, 248, 0.14);
+  border-radius: 10px;
+  background: rgba(7, 11, 26, 0.75);
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 0.55rem 0.7rem;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.config-sidebar__link:hover {
+  border-color: rgba(137, 242, 248, 0.4);
+  color: var(--text-main);
+}
+
+.config-sidebar__link.is-active {
+  border-color: rgba(137, 242, 248, 0.56);
+  color: var(--accent-ice);
+  background: rgba(59, 58, 221, 0.18);
+}
+
+.config-content {
+  margin-bottom: 0;
+}
+
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -637,6 +744,21 @@ td {
   .topbar__actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .session-menu__dropdown {
+    left: 0;
+    right: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .config-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .config-sidebar {
+    position: static;
   }
 
   .btn-primary {

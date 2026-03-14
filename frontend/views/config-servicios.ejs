@@ -14,22 +14,16 @@
         <%- include('partials/config-sidebar', { activeConfigSection }) %>
 
         <section class="service-section config-content">
-          <h1>Configuracion de plataforma</h1>
-          <div id="status-indicator" class="status-indicator status-green">ACTIVA</div>
-
-          <div class="status-actions">
-            <button class="btn-secondary js-status" data-value="ACTIVA">Activa</button>
-            <button class="btn-secondary js-status" data-value="PARCIAL">Parcial</button>
-            <button class="btn-secondary js-status" data-value="NO_ACTIVA">No activa</button>
-          </div>
-
+          <h1>Servicios deshabilitados en modo parcial</h1>
+          <input id="service-search" class="text-input" placeholder="Buscar servicio..." />
+          <div id="service-checklist" class="cards-inline"></div>
           <p id="config-message" class="small-note"></p>
         </section>
       </div>
     </main>
 
     <script src="/js/config-utils.js"></script>
-    <script src="/js/config-home.js"></script>
+    <script src="/js/config-servicios.js"></script>
     <script src="/js/session-ui.js"></script>
   </body>
 </html>

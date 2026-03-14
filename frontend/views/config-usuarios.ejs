@@ -14,22 +14,30 @@
         <%- include('partials/config-sidebar', { activeConfigSection }) %>
 
         <section class="service-section config-content">
-          <h1>Configuracion de plataforma</h1>
-          <div id="status-indicator" class="status-indicator status-green">ACTIVA</div>
-
-          <div class="status-actions">
-            <button class="btn-secondary js-status" data-value="ACTIVA">Activa</button>
-            <button class="btn-secondary js-status" data-value="PARCIAL">Parcial</button>
-            <button class="btn-secondary js-status" data-value="NO_ACTIVA">No activa</button>
+          <h1>Usuarios registrados</h1>
+          <input id="users-search" class="text-input" placeholder="Buscar usuario/correo/rol..." />
+          <div class="users-table-wrap">
+            <table id="users-table" class="users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Usuario</th>
+                  <th>Correo</th>
+                  <th>Rol</th>
+                  <th>Creado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body"></tbody>
+            </table>
           </div>
-
           <p id="config-message" class="small-note"></p>
         </section>
       </div>
     </main>
 
     <script src="/js/config-utils.js"></script>
-    <script src="/js/config-home.js"></script>
+    <script src="/js/config-usuarios.js"></script>
     <script src="/js/session-ui.js"></script>
   </body>
 </html>
