@@ -438,6 +438,16 @@ td {
   color: var(--text-muted);
 }
 
+.farming-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.farming-card .btn-secondary {
+  margin-top: auto;
+}
+
 .wish-farming-builder {
   max-width: none;
   width: 100%;

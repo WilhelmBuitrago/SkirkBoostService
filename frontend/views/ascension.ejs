@@ -18,7 +18,14 @@
           <h1>Ascension de personajes</h1>
           <p>Pagina dedicada exclusivamente al servicio de ascension.</p>
         </div>
-        <article class="mini-card farming-card <%= ascensionItem.isAvailable ? '' : 'is-disabled' %>" data-price="<%= ascensionItem.priceCop || 0 %>" data-books-price="<%= ascensionItem.withBooksPriceCop || 0 %>">
+        <article
+          class="mini-card farming-card <%= ascensionItem.isAvailable ? '' : 'is-disabled' %>"
+          data-price="<%= ascensionItem.priceCop || 0 %>"
+          data-books-price="<%= ascensionItem.withBooksPriceCop || 0 %>"
+          data-service-name="<%= ascensionItem.label %>"
+          data-has-owned-check="0"
+          data-has-books-check="<%= ascensionItem.hasBooksCheck ? '1' : '0' %>"
+        >
           <h3><%= ascensionItem.label %></h3>
           <p class="farming-price">
             $ <span class="js-farm-price-cop"><%= ascensionItem.priceCopFormatted || '-' %></span> COP
@@ -34,7 +41,16 @@
           <p class="small-note">Con libros: $ <%= ascensionItem.withBooksPriceCopFormatted %> COP | $ <%= ascensionItem.withBooksPriceUsdFormatted %> USD</p>
           <% } %>
           <% if (ascensionItem.priceCop) { %>
-          <button class="btn-secondary js-add-cart" data-service-id="<%= ascensionItem.serviceId %>" data-label="<%= ascensionItem.label %>" data-price="<%= ascensionItem.priceCop %>">Agregar al carrito</button>
+          <button
+            class="btn-secondary js-add-cart"
+            data-service-id="<%= ascensionItem.serviceId %>"
+            data-label="<%= ascensionItem.label %>"
+            data-service-name="<%= ascensionItem.label %>"
+            data-service-family="ascension"
+            data-price="<%= ascensionItem.priceCop %>"
+          >
+            Agregar al carrito
+          </button>
           <% } %>
         </article>
       </section>

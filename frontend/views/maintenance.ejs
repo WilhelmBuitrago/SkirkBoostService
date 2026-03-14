@@ -24,7 +24,16 @@
             <h3><%= item.label %></h3>
             <p>$ <%= item.priceCopFormatted %> COP</p>
             <p>$ <%= item.priceUsdFormatted %> USD</p>
-            <button class="btn-secondary js-add-cart" data-service-id="<%= item.serviceId %>" data-label="<%= item.label %>" data-price="<%= item.priceCop %>">Agregar al carrito</button>
+            <button
+              class="btn-secondary js-add-cart"
+              data-service-id="<%= item.serviceId %>"
+              data-label="<%= item.label %>"
+              data-service-name="<%= item.label %>"
+              data-service-family="maintenance"
+              data-price="<%= item.priceCop %>"
+            >
+              Agregar al carrito
+            </button>
           </article>
           <% }) %>
         </div>

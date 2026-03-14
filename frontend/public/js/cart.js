@@ -28,6 +28,77 @@
     }).format(value);
   }
 
+  function resolveServiceFamily(item) {
+    if (item.serviceFamily) {
+      return String(item.serviceFamily);
+    }
+    const id = String(item.serviceId || '');
+    if (id.startsWith('missions.')) return 'missions';
+    if (id.startsWith('wishFarming.')) return 'wishFarming';
+    if (id.startsWith('maintenance.')) return 'maintenance';
+    if (id.startsWith('zone.')) return 'exploration';
+    if (id.startsWith('farming.ascension-personajes')) return 'ascension';
+    if (id.startsWith('farming.')) return 'farming';
+    return '';
+  }
+
+  function buildPriceText(item) {
+    if (item.isVariablePrice) {
+      const rangeCop = String(item.priceRangeCop || '').trim();
+      return rangeCop ? `PRECIO VARIABLE: ${rangeCop} COP` : 'PRECIO VARIABLE';
+    }
+
+    const priceCop = Number(item.priceCop || 0);
+    return `${formatCop(priceCop)} COP`;
+  }
+
+  function buildConfirmedLabel(item) {
+    const family = resolveServiceFamily(item);
+    const serviceName = String(item.serviceName || item.label || '').trim();
+    const baseName = serviceName || String(item.label || '').trim();
+    const priceText = buildPriceText(item);
+
+    if (family === 'missions') {
+      return `Realizacion de misiones - ${baseName} - ${priceText}`;
+    }
+
+    if (family === 'maintenance') {
+      return `Mantenimiento de cuenta - ${baseName} (${priceText})`;
+    }
+
+    if (family === 'ascension') {
+      const booksText = item.hasBooksSelected ? 'Tiene libros' : 'No tiene libros';
+      return `Ascension de personajes - ${baseName} - (${booksText}) (${priceText})`;
+    }
+
+    if (family === 'farming') {
+      if (baseName === '100 Cristalopteros') {
+        return `Farmeo - ${baseName} (${priceText})`;
+      }
+
+      if (item.hasOwnedWeaponSelected) {
+        return `Farmeo - ${baseName} - (Tiene arma/refinamiento) (PRECIO BASE: ${priceText})`;
+      }
+
+      if (item.hasBooksCheck) {
+        const booksText = item.hasBooksSelected ? 'Tiene libros' : 'No tiene libros';
+        return `Farmeo - ${baseName} - (${booksText}) (${priceText})`;
+      }
+
+      return `Farmeo - ${baseName} (${priceText})`;
+    }
+
+    if (family === 'wishFarming') {
+      return `${String(item.label || baseName)} (${priceText})`;
+    }
+
+    if (family === 'exploration') {
+      return `${String(item.label || baseName)} (${priceText})`;
+    }
+
+    return `${String(item.label || baseName)} (${priceText})`;
+  }
+
   function getCart() {
     const raw = sessionStorage.getItem('skirk-cart');
     if (!raw) {
@@ -102,22 +173,7 @@
     lines.push(`Metodo de pago: ${order.metodoPago}`);
     lines.push(`Servicios:`);
     order.services.forEach((service) => {
-      if (service.isVariablePrice) {
-        const rangeCop = String(service.priceRangeCop || '').trim();
-        const rangeUsd = String(service.priceRangeUsd || '').trim();
-        const parts = [];
-        if (rangeCop) {
-          parts.push(`$ ${rangeCop} COP`);
-        }
-        if (rangeUsd) {
-          parts.push(`$ ${rangeUsd} USD`);
-        }
-        const suffix = parts.length > 0 ? `: ${parts.join(' | ')}` : '';
-        lines.push(`- ${service.label} (Precio variable${suffix})`);
-        return;
-      }
-
-      lines.push(`- ${service.label} ($ ${formatCop(service.priceCop)} COP)`);
+      lines.push(`- ${service.label}`);
     });
     lines.push(`Total: $ ${formatCop(order.totalCop)} COP`);
 
@@ -212,6 +268,21 @@
       card.appendChild(name);
       card.appendChild(copText);
       card.appendChild(usdText);
+
+      if (item.hasOwnedWeaponSelected) {
+        const ownershipNote = document.createElement('p');
+        ownershipNote.className = 'small-note';
+        ownershipNote.textContent = 'Observacion: precio base. Puede bajar si tienes arma/refinamiento.';
+        card.appendChild(ownershipNote);
+      }
+
+      if (resolveServiceFamily(item) === 'ascension') {
+        const booksNote = document.createElement('p');
+        booksNote.className = 'small-note';
+        booksNote.textContent = item.hasBooksSelected ? 'Incluye estado: Tiene libros.' : 'Incluye estado: No tiene libros.';
+        card.appendChild(booksNote);
+      }
+
       card.appendChild(removeBtn);
       cartItemsContainer.appendChild(card);
     });
@@ -259,6 +330,16 @@
       return;
     }
 
+    const payloadItems = items.map((item) => ({
+      id: item.id,
+      serviceId: item.serviceId,
+      label: buildConfirmedLabel(item),
+      priceCop: item.isVariablePrice ? null : Number(item.priceCop || 0),
+      isVariablePrice: Boolean(item.isVariablePrice),
+      priceRangeCop: item.priceRangeCop || '',
+      priceRangeUsd: item.priceRangeUsd || ''
+    }));
+
     try {
       setConfirmEnabled(false);
       const response = await fetch(`${apiBaseUrl}/orders`, {
@@ -266,7 +347,7 @@
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          servicios: items,
+          servicios: payloadItems,
           contactoId,
           metodoPago
         })

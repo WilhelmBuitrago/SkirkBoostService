@@ -107,7 +107,9 @@
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         serviceId: zoneServiceId,
         label: selectedMissions ? `Exploracion - ${zoneData.name} (${selectedMissions})` : `Exploracion - ${zoneData.name}`,
-        priceCop: currentTotal
+        priceCop: currentTotal,
+        serviceFamily: 'exploration',
+        serviceName: zoneData.name
       });
       saveCart(current);
       showZoneMessage('Exploracion agregada al carrito.', false);

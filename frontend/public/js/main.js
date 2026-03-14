@@ -36,7 +36,13 @@
       priceCop: payload.priceCop,
       isVariablePrice: Boolean(payload.isVariablePrice),
       priceRangeCop: payload.priceRangeCop || '',
-      priceRangeUsd: payload.priceRangeUsd || ''
+      priceRangeUsd: payload.priceRangeUsd || '',
+      serviceFamily: payload.serviceFamily || '',
+      serviceName: payload.serviceName || payload.label || '',
+      hasOwnedWeaponSelected: Boolean(payload.hasOwnedWeaponSelected),
+      hasBooksSelected: Boolean(payload.hasBooksSelected),
+      hasBooksCheck: Boolean(payload.hasBooksCheck),
+      basePriceCop: Number.isFinite(Number(payload.basePriceCop)) ? Number(payload.basePriceCop) : null
     });
     saveCart(current);
     return { ok: true };
@@ -112,6 +118,8 @@
         addButton.dataset.serviceId = hasPrice && selectedOption ? String(selectedOption.serviceId || '') : '';
         addButton.dataset.price = hasPrice ? String(priceCop) : '';
         addButton.dataset.label = `Farmeo de deseos - ${quantityText} (${mapText})`;
+        addButton.dataset.serviceFamily = 'wishFarming';
+        addButton.dataset.serviceName = quantityText;
         addButton.disabled = !hasPrice;
       }
 
@@ -129,11 +137,30 @@
   document.querySelectorAll('.farming-card').forEach((card) => {
     const baseCop = Number(card.dataset.price || 0);
     const booksCop = Number(card.dataset.booksPrice || 0);
+    const hasOwnedCheck = card.dataset.hasOwnedCheck === '1';
+    const hasBooksCheck = card.dataset.hasBooksCheck === '1';
+    const serviceName = card.dataset.serviceName || '';
     const ownedWeapon = card.querySelector('.js-owned-weapon');
     const haveBooks = card.querySelector('.js-have-books');
+    const addButton = card.querySelector('.js-add-cart');
     const copLabel = card.querySelector('.js-farm-price-cop');
     const usdLabel = card.querySelector('.js-farm-price-usd');
     const contactNote = card.querySelector('.contact-note');
+
+    function syncFarmingPayload() {
+      if (!addButton) {
+        return;
+      }
+
+      const hasBooksSelected = Boolean(haveBooks && haveBooks.checked && booksCop > 0);
+      const currentPrice = hasBooksSelected ? booksCop : baseCop;
+      addButton.dataset.price = String(currentPrice);
+      addButton.dataset.serviceName = serviceName || addButton.dataset.label || '';
+      addButton.dataset.hasOwnedWeaponSelected = hasOwnedCheck && ownedWeapon ? String(ownedWeapon.checked) : 'false';
+      addButton.dataset.hasBooksSelected = hasBooksCheck && haveBooks ? String(haveBooks.checked) : 'false';
+      addButton.dataset.hasBooksCheck = hasBooksCheck ? '1' : '0';
+      addButton.dataset.basePrice = Number.isFinite(baseCop) ? String(baseCop) : '';
+    }
 
     function setPrice(copValue) {
       if (!copLabel || !usdLabel) {
@@ -153,6 +180,7 @@
         } else {
           contactNote.classList.add('hidden');
         }
+        syncFarmingPayload();
       });
     }
 
@@ -160,8 +188,11 @@
       haveBooks.addEventListener('change', () => {
         const currentPrice = haveBooks.checked && booksCop > 0 ? booksCop : baseCop;
         setPrice(currentPrice);
+        syncFarmingPayload();
       });
     }
+
+    syncFarmingPayload();
   });
 
   document.querySelectorAll('.js-add-cart').forEach((button) => {
@@ -183,7 +214,13 @@
         priceCop: isVariablePrice ? null : priceCop,
         isVariablePrice,
         priceRangeCop: button.dataset.priceRangeCop || '',
-        priceRangeUsd: button.dataset.priceRangeUsd || ''
+        priceRangeUsd: button.dataset.priceRangeUsd || '',
+        serviceFamily: button.dataset.serviceFamily || '',
+        serviceName: button.dataset.serviceName || button.dataset.label,
+        hasOwnedWeaponSelected: button.dataset.hasOwnedWeaponSelected === 'true',
+        hasBooksSelected: button.dataset.hasBooksSelected === 'true',
+        hasBooksCheck: button.dataset.hasBooksCheck === '1',
+        basePriceCop: button.dataset.basePrice
       });
 
       if (!result.ok) {
