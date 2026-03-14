@@ -33,7 +33,10 @@
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       serviceId: payload.serviceId,
       label: payload.label,
-      priceCop: payload.priceCop
+      priceCop: payload.priceCop,
+      isVariablePrice: Boolean(payload.isVariablePrice),
+      priceRangeCop: payload.priceRangeCop || '',
+      priceRangeUsd: payload.priceRangeUsd || ''
     });
     saveCart(current);
     return { ok: true };
@@ -168,15 +171,19 @@
         return;
       }
 
+      const isVariablePrice = button.dataset.variablePrice === '1';
       const priceCop = Number(button.dataset.price || 0);
-      if (!Number.isFinite(priceCop) || priceCop <= 0) {
+      if (!isVariablePrice && (!Number.isFinite(priceCop) || priceCop <= 0)) {
         return;
       }
 
       const result = addToCart({
         serviceId: button.dataset.serviceId,
         label: button.dataset.label,
-        priceCop
+        priceCop: isVariablePrice ? null : priceCop,
+        isVariablePrice,
+        priceRangeCop: button.dataset.priceRangeCop || '',
+        priceRangeUsd: button.dataset.priceRangeUsd || ''
       });
 
       if (!result.ok) {

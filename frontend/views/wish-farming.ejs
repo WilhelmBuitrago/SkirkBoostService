@@ -17,6 +17,9 @@
           return match ? Number(match[0]) : null;
         };
         const wishOptions = { lessThan50: {}, moreThan50: {} };
+        const wishServiceAvailable =
+          wishFarming.lessThan50.some((item) => item.isAvailable) ||
+          wishFarming.moreThan50.some((item) => item.isAvailable);
         wishFarming.lessThan50.forEach((item) => {
           const quantity = extractQuantity(item.label);
           if (!quantity) {
@@ -93,7 +96,7 @@
           </div>
         </div>
         <div class="cards-inline wish-farming-builder-wrap">
-          <article class="mini-card wish-farming-builder" data-wish-available="<%= wishFarming.isAvailable ? '1' : '0' %>">
+          <article class="mini-card wish-farming-builder" data-wish-available="<%= wishServiceAvailable ? '1' : '0' %>">
             <h3>Configurar pedido</h3>
             <div class="wish-farming-controls">
               <label class="wish-farming-field">

@@ -102,6 +102,21 @@
     lines.push(`Metodo de pago: ${order.metodoPago}`);
     lines.push(`Servicios:`);
     order.services.forEach((service) => {
+      if (service.isVariablePrice) {
+        const rangeCop = String(service.priceRangeCop || '').trim();
+        const rangeUsd = String(service.priceRangeUsd || '').trim();
+        const parts = [];
+        if (rangeCop) {
+          parts.push(`$ ${rangeCop} COP`);
+        }
+        if (rangeUsd) {
+          parts.push(`$ ${rangeUsd} USD`);
+        }
+        const suffix = parts.length > 0 ? `: ${parts.join(' | ')}` : '';
+        lines.push(`- ${service.label} (Precio variable${suffix})`);
+        return;
+      }
+
       lines.push(`- ${service.label} ($ ${formatCop(service.priceCop)} COP)`);
     });
     lines.push(`Total: $ ${formatCop(order.totalCop)} COP`);
@@ -168,14 +183,21 @@
       const name = document.createElement('h3');
       name.textContent = item.label;
 
-      const priceCop = Number(item.priceCop || 0);
-      subtotalCop += priceCop;
-
       const copText = document.createElement('p');
-      copText.textContent = `$ ${formatCop(priceCop)} COP`;
-
       const usdText = document.createElement('p');
-      usdText.textContent = `$ ${formatUsd(priceCop / exchangeRate)} USD`;
+      const isVariablePrice = Boolean(item.isVariablePrice);
+      const numericPriceCop = Number(item.priceCop || 0);
+
+      if (isVariablePrice) {
+        const rangeCop = String(item.priceRangeCop || '').trim();
+        const rangeUsd = String(item.priceRangeUsd || '').trim();
+        copText.textContent = rangeCop ? `Precio variable: $ ${rangeCop} COP` : 'Precio variable';
+        usdText.textContent = rangeUsd ? `Precio variable: $ ${rangeUsd} USD` : 'Precio variable';
+      } else {
+        subtotalCop += numericPriceCop;
+        copText.textContent = `$ ${formatCop(numericPriceCop)} COP`;
+        usdText.textContent = `$ ${formatUsd(numericPriceCop / exchangeRate)} USD`;
+      }
 
       const removeBtn = document.createElement('button');
       removeBtn.className = 'btn-secondary';

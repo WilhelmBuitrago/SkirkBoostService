@@ -97,15 +97,28 @@ router.post('/', requireAuth, async (req, res, next) => {
       return res.status(400).json({ error: 'El contacto seleccionado no existe.' });
     }
 
-    let totalCop = 0;
     const sanitizedServices = servicios
       .map((entry) => ({
         id: String(entry.id || ''),
         serviceId: String(entry.serviceId || ''),
         label: String(entry.label || ''),
-        priceCop: Number(entry.priceCop || 0)
+        isVariablePrice: Boolean(entry.isVariablePrice),
+        priceRangeCop: String(entry.priceRangeCop || ''),
+        priceRangeUsd: String(entry.priceRangeUsd || ''),
+        priceCop: entry.priceCop === null ? null : Number(entry.priceCop || 0)
       }))
-      .filter((entry) => entry.serviceId && entry.label && Number.isFinite(entry.priceCop) && entry.priceCop > 0);
+      .filter((entry) => {
+        if (!entry.serviceId || !entry.label) {
+          return false;
+        }
+
+        if (entry.isVariablePrice) {
+          entry.priceCop = null;
+          return true;
+        }
+
+        return Number.isFinite(entry.priceCop) && entry.priceCop > 0;
+      });
 
     if (sanitizedServices.length < 1) {
       return res.status(400).json({ error: 'No hay servicios validos para confirmar.' });
@@ -121,8 +134,11 @@ router.post('/', requireAuth, async (req, res, next) => {
       seenServiceIds.add(service.serviceId);
     }
 
+    let totalCop = 0;
     for (const service of sanitizedServices) {
-      totalCop += Math.round(service.priceCop);
+      if (Number.isFinite(service.priceCop)) {
+        totalCop += Math.round(service.priceCop);
+      }
     }
 
     const insertResult = await pool.query(

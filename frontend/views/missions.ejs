@@ -29,9 +29,17 @@
             <p>$ <%= item.priceRangeCopFormatted %> COP</p>
             <p>$ <%= item.priceRangeUsdFormatted %> USD</p>
             <% } %>
-            <% if (item.priceCop) { %>
-            <button class="btn-secondary js-add-cart" data-service-id="<%= item.serviceId %>" data-label="<%= item.label %>" data-price="<%= item.priceCop %>">Agregar al carrito</button>
-            <% } %>
+            <button
+              class="btn-secondary js-add-cart"
+              data-service-id="<%= item.serviceId %>"
+              data-label="<%= item.label %>"
+              data-price="<%= item.priceCop || '' %>"
+              data-variable-price="<%= item.priceCop ? '0' : '1' %>"
+              data-price-range-cop="<%= item.priceRangeCopFormatted || '' %>"
+              data-price-range-usd="<%= item.priceRangeUsdFormatted || '' %>"
+            >
+              Agregar al carrito
+            </button>
           </article>
           <% }) %>
         </div>
