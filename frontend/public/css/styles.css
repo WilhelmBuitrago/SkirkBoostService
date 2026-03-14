@@ -55,6 +55,7 @@ h3 {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  padding: 0 clamp(0.75rem, 3vw, 2.8rem);
 }
 
 .topbar__brand-wrap {
@@ -486,8 +487,15 @@ td {
 }
 
 .back-link {
+  display: inline-block;
   color: var(--accent-ice);
   text-decoration: none;
+}
+
+.back-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .detail-card {
@@ -731,7 +739,7 @@ td {
   }
 
   .topbar__inner {
-    padding: 0.6rem 0;
+    padding: 0.6rem clamp(0.75rem, 4vw, 1rem);
     align-items: flex-start;
     flex-direction: column;
   }

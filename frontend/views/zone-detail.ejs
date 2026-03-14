@@ -18,7 +18,10 @@
   >
     <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
     <main class="container detail-layout">
-      <a class="back-link" href="/">Volver al inicio</a>
+      <div class="back-links">
+        <a class="back-link" href="/exploracion">Volver</a>
+        <a class="back-link" href="/">Volver al inicio</a>
+      </div>
 
       <article class="detail-card">
         <div class="detail-image" style="background-image: linear-gradient(180deg, rgba(59,58,221,0.30), rgba(137,242,248,0.20)), url('/assets/zones/<%= zone.image %>');"></div>
