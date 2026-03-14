@@ -46,11 +46,55 @@
       <section class="service-section">
         <div class="section-head">
           <h1>Farmeo de deseos</h1>
-          <p>Elige la cantidad y el progreso de mapa para agregar el servicio al carrito.</p>
+          <p>Tarifas separadas por progreso del mapa.</p>
         </div>
-        <div class="cards-inline">
+        <div class="columns-two">
+          <div class="price-table-wrap">
+            <h3>Menos del 50% del mapa</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cantidad</th>
+                  <th>COP</th>
+                  <th>USD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% wishFarming.lessThan50.forEach((item) => { %>
+                <tr class="<%= item.isAvailable ? '' : 'is-disabled' %>">
+                  <td><%= item.label %></td>
+                  <td><%= item.priceCopFormatted ? '$ ' + item.priceCopFormatted : '-' %></td>
+                  <td><%= item.priceUsdFormatted ? '$ ' + item.priceUsdFormatted : '-' %></td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+          <div class="price-table-wrap">
+            <h3>Mas del 50% del mapa</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Cantidad</th>
+                  <th>COP</th>
+                  <th>USD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% wishFarming.moreThan50.forEach((item) => { %>
+                <tr class="<%= item.isAvailable ? '' : 'is-disabled' %>">
+                  <td><%= item.label %></td>
+                  <td><%= item.priceCopFormatted ? '$ ' + item.priceCopFormatted : '-' %></td>
+                  <td><%= item.priceUsdFormatted ? '$ ' + item.priceUsdFormatted : '-' %></td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="cards-inline wish-farming-builder-wrap">
           <article class="mini-card wish-farming-builder" data-wish-available="<%= wishFarming.isAvailable ? '1' : '0' %>">
-            <h3>Configurar servicio</h3>
+            <h3>Configurar pedido</h3>
             <div class="wish-farming-controls">
               <label class="wish-farming-field">
                 Cantidad
@@ -68,8 +112,6 @@
                 </select>
               </label>
             </div>
-            <p class="wish-farming-price">Precio COP: <strong class="js-wish-price-cop">-</strong></p>
-            <p class="wish-farming-price">Precio USD: <strong class="js-wish-price-usd">-</strong></p>
             <button class="btn-secondary js-add-cart js-add-cart-wish" type="button" disabled>
               Agregar al carrito
             </button>

@@ -85,7 +85,7 @@
       const addButton = card.querySelector('.js-add-cart-wish');
       const isCardAvailable = card.dataset.wishAvailable !== '0';
 
-      if (!quantitySelect || !mapSelect || !copNode || !usdNode || !addButton) {
+      if (!quantitySelect || !mapSelect || !addButton) {
         return;
       }
 
@@ -99,8 +99,12 @@
         const quantityText = selectedOption && selectedOption.label ? selectedOption.label : `${quantity} deseos`;
         const mapText = getWishMapText(mapValue);
 
-        copNode.textContent = hasPrice ? formatCop(priceCop) : '-';
-        usdNode.textContent = hasPrice ? formatUsd(priceCop / rate) : '-';
+        if (copNode) {
+          copNode.textContent = hasPrice ? formatCop(priceCop) : '-';
+        }
+        if (usdNode) {
+          usdNode.textContent = hasPrice ? formatUsd(priceCop / rate) : '-';
+        }
 
         addButton.dataset.serviceId = hasPrice && selectedOption ? String(selectedOption.serviceId || '') : '';
         addButton.dataset.price = hasPrice ? String(priceCop) : '';
