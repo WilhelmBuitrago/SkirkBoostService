@@ -31,6 +31,7 @@
     const registerLink = document.getElementById('register-link');
     const logoutBtn = document.getElementById('logout-btn');
     const configLink = document.getElementById('config-link');
+    const profileLink = document.getElementById('profile-link');
     const sessionUser = document.getElementById('session-user');
 
     try {
@@ -58,6 +59,9 @@
       }
       if (logoutBtn) {
         logoutBtn.classList.remove('hidden');
+      }
+      if (profileLink) {
+        profileLink.classList.remove('hidden');
       }
       if (configLink && data.user.role === 'administrador') {
         configLink.classList.remove('hidden');

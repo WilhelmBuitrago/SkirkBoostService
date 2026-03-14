@@ -311,6 +311,15 @@ app.get('/carrito', async (_req, res) => {
   });
 });
 
+app.get('/perfil', async (_req, res) => {
+  const platformStatus = await fetchPlatformStatus();
+  res.render('perfil', {
+    pageTitle: 'Perfil',
+    apiBaseUrl: PUBLIC_API_BASE_URL,
+    platformStatus
+  });
+});
+
 app.use((err, _req, res, _next) => {
   console.error(err);
   res.status(500).render('404', {

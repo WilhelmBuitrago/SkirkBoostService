@@ -19,7 +19,16 @@
   }
 
   function addToCart(payload) {
+    if (!payload || !payload.serviceId) {
+      return { ok: false, error: 'Servicio invalido.' };
+    }
+
     const current = getCart();
+    const duplicated = current.some((entry) => entry.serviceId === payload.serviceId);
+    if (duplicated) {
+      return { ok: false, error: 'Este servicio ya esta en el carrito. Eliminalo antes de volver a agregarlo.' };
+    }
+
     current.push({
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       serviceId: payload.serviceId,
@@ -27,6 +36,7 @@
       priceCop: payload.priceCop
     });
     saveCart(current);
+    return { ok: true };
   }
 
   function formatCop(value) {
@@ -93,11 +103,15 @@
         return;
       }
 
-      addToCart({
+      const result = addToCart({
         serviceId: button.dataset.serviceId,
         label: button.dataset.label,
         priceCop
       });
+
+      if (!result.ok) {
+        window.alert(result.error);
+      }
     });
   });
 })();

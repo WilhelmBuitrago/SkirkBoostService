@@ -53,6 +53,37 @@
         </div>
       </section>
 
+      <section class="service-section">
+        <h2>Pedidos</h2>
+        <div class="cards-inline">
+          <input id="orders-search" class="text-input" placeholder="Filtrar por usuario/correo/contacto..." />
+          <select id="orders-status-filter" class="text-input">
+            <option value="">Todos los estados</option>
+            <option value="Cotizacion">Cotizacion</option>
+            <option value="En espera">En espera</option>
+            <option value="Realizando">Realizando</option>
+            <option value="Finalizado">Finalizado</option>
+          </select>
+        </div>
+        <div class="users-table-wrap">
+          <table id="orders-table" class="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Correo</th>
+                <th>Contacto</th>
+                <th>Metodo</th>
+                <th>Servicios</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
       <p id="config-message" class="small-note"></p>
     </main>
 

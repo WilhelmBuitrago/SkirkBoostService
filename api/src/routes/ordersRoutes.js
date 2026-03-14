@@ -4,6 +4,27 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 const allowedPayment = new Set(['Nequi', 'PayPal']);
+const ORDER_STATUS_VALUES = new Set(['Cotizacion', 'En espera', 'Realizando', 'Finalizado']);
+const INITIAL_ORDER_STATUS = 'Cotizacion';
+
+function mapOrderRow(row) {
+  const services = Array.isArray(row.servicios) ? row.servicios : [];
+  return {
+    id: row.id,
+    email: row.correo,
+    usuario: row.nombre_usuario,
+    contacto: {
+      plataforma: row.contacto_plataforma,
+      contacto: row.contacto_valor
+    },
+    metodoPago: row.metodo_pago,
+    services,
+    totalCop: Number(row.total_cop || 0),
+    estado: ORDER_STATUS_VALUES.has(row.estado) ? row.estado : INITIAL_ORDER_STATUS,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
 
 async function getProfileState(userId, role) {
   const userResult = await pool.query('SELECT id, usuario, email, rol FROM usuarios WHERE id = $1 LIMIT 1', [userId]);
@@ -84,10 +105,20 @@ router.post('/', requireAuth, async (req, res, next) => {
         label: String(entry.label || ''),
         priceCop: Number(entry.priceCop || 0)
       }))
-      .filter((entry) => entry.label && Number.isFinite(entry.priceCop) && entry.priceCop > 0);
+      .filter((entry) => entry.serviceId && entry.label && Number.isFinite(entry.priceCop) && entry.priceCop > 0);
 
     if (sanitizedServices.length < 1) {
       return res.status(400).json({ error: 'No hay servicios validos para confirmar.' });
+    }
+
+    const seenServiceIds = new Set();
+    for (const service of sanitizedServices) {
+      if (seenServiceIds.has(service.serviceId)) {
+        return res.status(400).json({
+          error: `No puedes pedir dos veces el mismo servicio en una sola orden (${service.label}).`
+        });
+      }
+      seenServiceIds.add(service.serviceId);
     }
 
     for (const service of sanitizedServices) {
@@ -96,9 +127,9 @@ router.post('/', requireAuth, async (req, res, next) => {
 
     const insertResult = await pool.query(
       `INSERT INTO ordenes
-       (usuario_id, correo, nombre_usuario, contacto_plataforma, contacto_valor, metodo_pago, servicios, total_cop)
-       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8)
-       RETURNING id, created_at`,
+       (usuario_id, correo, nombre_usuario, contacto_plataforma, contacto_valor, metodo_pago, servicios, total_cop, estado, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, NOW())
+       RETURNING id, created_at, updated_at, estado`,
       [
         state.user.id,
         state.user.email,
@@ -107,7 +138,8 @@ router.post('/', requireAuth, async (req, res, next) => {
         selectedContact.contacto,
         metodoPago,
         JSON.stringify(sanitizedServices),
-        totalCop
+        totalCop,
+        INITIAL_ORDER_STATUS
       ]
     );
 
@@ -124,9 +156,54 @@ router.post('/', requireAuth, async (req, res, next) => {
           contacto: selectedContact.contacto
         },
         metodoPago,
-        totalCop
+        totalCop,
+        estado: insertResult.rows[0].estado,
+        updatedAt: insertResult.rows[0].updated_at
       }
     });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/', requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.session.user.id;
+    const result = await pool.query(
+      `SELECT id, correo, nombre_usuario, contacto_plataforma, contacto_valor, metodo_pago, servicios, total_cop, estado, created_at, updated_at
+       FROM ordenes
+       WHERE usuario_id = $1
+       ORDER BY created_at DESC, id DESC`,
+      [userId]
+    );
+
+    return res.json({ orders: result.rows.map(mapOrderRow) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/:id', requireAuth, async (req, res, next) => {
+  try {
+    const orderId = Number(req.params.id);
+    if (!Number.isInteger(orderId) || orderId <= 0) {
+      return res.status(400).json({ error: 'ID de pedido invalido.' });
+    }
+
+    const userId = req.session.user.id;
+    const result = await pool.query(
+      `SELECT id, correo, nombre_usuario, contacto_plataforma, contacto_valor, metodo_pago, servicios, total_cop, estado, created_at, updated_at
+       FROM ordenes
+       WHERE id = $1 AND usuario_id = $2
+       LIMIT 1`,
+      [orderId, userId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Pedido no encontrado.' });
+    }
+
+    return res.json({ order: mapOrderRow(result.rows[0]) });
   } catch (error) {
     return next(error);
   }

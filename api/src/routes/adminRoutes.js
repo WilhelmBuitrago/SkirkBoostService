@@ -8,6 +8,7 @@ const router = express.Router();
 
 const STATUS_VALUES = new Set(['ACTIVA', 'PARCIAL', 'NO_ACTIVA']);
 const ROLE_VALUES = new Set(['usuario', 'administrador']);
+const ORDER_STATUS_VALUES = new Set(['Cotizacion', 'En espera', 'Realizando', 'Finalizado']);
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function normalizeText(value) {
@@ -25,6 +26,25 @@ function mapUserRow(row) {
     email: row.email,
     role: row.rol,
     createdAt: row.created_at
+  };
+}
+
+function mapOrderRow(row) {
+  return {
+    id: row.id,
+    usuarioId: row.usuario_id,
+    usuario: row.nombre_usuario,
+    email: row.correo,
+    contacto: {
+      plataforma: row.contacto_plataforma,
+      contacto: row.contacto_valor
+    },
+    metodoPago: row.metodo_pago,
+    services: Array.isArray(row.servicios) ? row.servicios : [],
+    totalCop: Number(row.total_cop || 0),
+    estado: row.estado,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
   };
 }
 
@@ -226,6 +246,101 @@ router.delete('/users/:id', async (req, res, next) => {
     }
 
     await pool.query('DELETE FROM usuarios WHERE id = $1', [userId]);
+    return res.json({ ok: true });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/orders', async (req, res, next) => {
+  try {
+    const q = normalizeText(req.query.q).toLowerCase();
+    const estado = normalizeText(req.query.estado);
+    const values = [];
+    const where = [];
+
+    if (q) {
+      values.push(`%${q}%`);
+      const index = values.length;
+      where.push(`(
+        LOWER(nombre_usuario) LIKE $${index}
+        OR LOWER(correo) LIKE $${index}
+        OR LOWER(contacto_valor) LIKE $${index}
+      )`);
+    }
+
+    if (estado) {
+      if (!ORDER_STATUS_VALUES.has(estado)) {
+        return res.status(400).json({ error: 'Estado de pedido invalido' });
+      }
+      values.push(estado);
+      where.push(`estado = $${values.length}`);
+    }
+
+    const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+    const result = await pool.query(
+      `SELECT id, usuario_id, correo, nombre_usuario, contacto_plataforma, contacto_valor, metodo_pago, servicios, total_cop, estado, created_at, updated_at
+       FROM ordenes
+       ${whereClause}
+       ORDER BY created_at DESC, id DESC`,
+      values
+    );
+
+    return res.json({ orders: result.rows.map(mapOrderRow) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.put('/orders/:id', async (req, res, next) => {
+  try {
+    const orderId = Number(req.params.id);
+    if (!Number.isInteger(orderId) || orderId <= 0) {
+      return res.status(400).json({ error: 'ID de pedido invalido' });
+    }
+
+    const estado = normalizeText(req.body.estado);
+    if (!ORDER_STATUS_VALUES.has(estado)) {
+      return res.status(400).json({ error: 'Estado de pedido invalido' });
+    }
+
+    const result = await pool.query(
+      `UPDATE ordenes
+       SET estado = $1,
+           updated_at = NOW()
+       WHERE id = $2
+       RETURNING id, usuario_id, correo, nombre_usuario, contacto_plataforma, contacto_valor, metodo_pago, servicios, total_cop, estado, created_at, updated_at`,
+      [estado, orderId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    return res.json({ order: mapOrderRow(result.rows[0]) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete('/orders/:id', async (req, res, next) => {
+  try {
+    const orderId = Number(req.params.id);
+    if (!Number.isInteger(orderId) || orderId <= 0) {
+      return res.status(400).json({ error: 'ID de pedido invalido' });
+    }
+
+    const deleted = await pool.query(
+      `DELETE FROM ordenes
+       WHERE id = $1
+       RETURNING id`,
+      [orderId]
+    );
+
+    if (deleted.rowCount === 0) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
     return res.json({ ok: true });
   } catch (error) {
     return next(error);

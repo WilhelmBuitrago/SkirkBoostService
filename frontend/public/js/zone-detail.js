@@ -97,6 +97,12 @@
       const currentTotal = calculateTotal();
       const selectedMissions = getSelectedMissionNames();
       const current = getCart();
+      const duplicated = current.some((entry) => entry.serviceId === zoneServiceId);
+      if (duplicated) {
+        showZoneMessage('Esta exploracion ya esta en el carrito. Debes eliminarla antes de volver a agregarla.', true);
+        return;
+      }
+
       current.push({
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         serviceId: zoneServiceId,
