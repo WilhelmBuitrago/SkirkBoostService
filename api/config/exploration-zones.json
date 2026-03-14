@@ -29,7 +29,7 @@
   },
   {
     "id": "sima",
-    "name": "Sima",
+    "name": "Sima (Los 2)",
     "image": "sima.svg",
     "basePriceCop": 50000,
     "missionOptions": []
@@ -49,14 +49,9 @@
     "missionBundleTotalCop": 150000,
     "missionOptions": [
       {
-        "id": "mission-a",
-        "name": "Mision A",
-        "priceCop": 25000
-      },
-      {
-        "id": "mission-b",
-        "name": "Mision B",
-        "priceCop": 25000
+        "id": "aranyaka",
+        "name": "Aranyaka",
+        "priceCop": 50000
       }
     ]
   },
@@ -68,14 +63,29 @@
     "missionBundleTotalCop": 250000,
     "missionOptions": [
       {
-        "id": "mission-a",
-        "name": "Mision A",
-        "priceCop": 37500
+        "id": "golden-slumber",
+        "name": "Golden Slumber",
+        "priceCop": 25000
       },
       {
-        "id": "mission-b",
-        "name": "Mision B",
-        "priceCop": 37500
+        "id": "dirge-of-bilqis",
+        "name": "Dirge of Bilqis",
+        "priceCop": 25000
+      },
+      {
+        "id": "khvarena-of-good-and-evil",
+        "name": "Khvarena of Good and Evil",
+        "priceCop": 10000
+      },
+      {
+        "id": "the-fallen-falcon",
+        "name": "The Fallen Falcon",
+        "priceCop": 10000
+      },
+      {
+        "id": "afratu's-dilemma",
+        "name": "Afratu's Dilemma",
+        "priceCop": 5000
       }
     ]
   },
@@ -87,14 +97,29 @@
     "missionBundleTotalCop": 265000,
     "missionOptions": [
       {
-        "id": "mission-a",
-        "name": "Mision A",
-        "priceCop": 87500
+        "id": "narzissenkreuz",
+        "name": "Narzissenkreuz",
+        "priceCop": 36750
       },
       {
-        "id": "mission-b",
-        "name": "Mision B",
-        "priceCop": 87500
+        "id": "ancient-colors",
+        "name": "Ancient Colors",
+        "priceCop": 26250
+      },
+      {
+        "id": "unfinished-comedy",
+        "name": "Unfinished Comedy",
+        "priceCop": 36750
+      },
+      {
+        "id": "fontaine-research-institute-chronicles",
+        "name": "Fontaine Research Institute Chronicles",
+        "priceCop": 36750
+      },
+      {
+        "id": "the-wild-fairy-of-erinnyes",
+        "name": "The Wild Fairy of Erinnyes",
+        "priceCop": 26250
       }
     ]
   },
@@ -131,6 +156,13 @@
     "name": "Mar de Antano Petricor",
     "image": "mar-de-antano-petricor.svg",
     "basePriceCop": 30000,
-    "missionOptions": []
+    "missionBundleTotalCop": 40000,
+    "missionOptions": [
+      {
+        "id": "canticles-of-harmony",
+        "name": "Canticles of Harmony",
+        "priceCop": 10000
+      }
+    ]
   }
 ]
