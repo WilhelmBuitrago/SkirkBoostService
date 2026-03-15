@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body
+    data-api-base-url="<%= apiBaseUrl %>"
+    data-platform-status="<%= platformStatus %>"
+    data-target-path="<%= targetPath %>"
+    data-boot-min-duration="<%= bootMinDurationMs %>"
+    data-boot-max-duration="<%= bootMaxDurationMs %>"
+    data-boot-max-attempts="<%= maxAttempts %>"
+  >
+    <%- include('partials/topbar', { apiBaseUrl, platformStatus }) %>
+    <main class="container boot-loader">
+      <section class="boot-loader__card" aria-live="polite" aria-atomic="true">
+        <p class="boot-loader__eyebrow">Iniciando conexion</p>
+        <h1 class="boot-loader__title">Estamos preparando todo para ti</h1>
+        <p class="boot-loader__subtitle" id="boot-main-message">
+          Montando servicios y verificando disponibilidad.
+        </p>
+
+        <div class="boot-loader__progress-wrap" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Cargando servicios">
+          <div class="boot-loader__progress-track">
+            <div class="boot-loader__progress-fill" id="boot-progress-fill"></div>
+          </div>
+          <div class="boot-loader__progress-meta">
+            <span id="boot-progress-value">0%</span>
+            <span id="boot-attempt-value">Intento 1 de <%= maxAttempts %></span>
+          </div>
+        </div>
+
+        <p class="boot-loader__didactic is-visible" id="boot-didactic-message">
+          Preparandonos para ti
+        </p>
+
+        <p class="boot-loader__final" id="boot-final-message" hidden>
+          Lo sentimos, algo ha ocurrido... Trabajaremos rapidamente para brindarte el mejor servicio.
+        </p>
+      </section>
+    </main>
+    <%- include('partials/footer') %>
+
+    <script id="boot-messages" type="application/json"><%- JSON.stringify(didacticMessages) %></script>
+    <script src="/js/boot-loading.js"></script>
+  </body>
+</html>

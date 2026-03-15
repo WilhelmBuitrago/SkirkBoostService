@@ -35,20 +35,38 @@ function formatUsd(value) {
   }).format(value);
 }
 
+class CatalogUnavailableError extends Error {
+  constructor(message, cause) {
+    super(message);
+    this.name = 'CatalogUnavailableError';
+    this.cause = cause;
+  }
+}
+
 async function fetchCatalog() {
   const abortController = new AbortController();
   const timeout = setTimeout(() => abortController.abort(), 5000);
 
-  const response = await fetch(`${API_BASE_URL}/catalog`, {
-    headers: { 'Content-Type': 'application/json' },
-    signal: abortController.signal
-  }).finally(() => clearTimeout(timeout));
+  try {
+    const response = await fetch(`${API_BASE_URL}/catalog`, {
+      headers: { 'Content-Type': 'application/json' },
+      signal: abortController.signal
+    });
 
-  if (!response.ok) {
-    throw new Error(`Error catalog API: ${response.status}`);
+    if (!response.ok) {
+      throw new CatalogUnavailableError(`Error catalog API: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (error instanceof CatalogUnavailableError) {
+      throw error;
+    }
+
+    throw new CatalogUnavailableError('Catalog API is unavailable.', error);
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return response.json();
 }
 
 async function fetchPlatformStatus() {
@@ -341,9 +359,48 @@ app.get('/perfil', async (_req, res) => {
   });
 });
 
+app.get('/boot/availability', async (_req, res) => {
+  try {
+    await fetchCatalog();
+    res.json({ ready: true });
+  } catch (_error) {
+    res.status(503).json({ ready: false });
+  }
+});
+
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(500).render('404', {
+  if (err instanceof CatalogUnavailableError) {
+    const requestedPath = _req.originalUrl && !_req.originalUrl.startsWith('/boot/')
+      ? _req.originalUrl
+      : '/';
+
+    return res.status(503).render('boot-loading', {
+      pageTitle: 'Preparando Skirk Boost Service',
+      apiBaseUrl: PUBLIC_API_BASE_URL,
+      platformStatus: 'NO_ACTIVA',
+      targetPath: requestedPath,
+      bootMinDurationMs: 10000,
+      bootMaxDurationMs: 30000,
+      maxAttempts: 2,
+      didacticMessages: [
+        'Generando servicios para ti',
+        'Preparandonos para ti',
+        'Sincronizando detalles de tu pedido',
+        'Ajustando todo para tu experiencia',
+        'Cargando catalogo en tiempo real',
+        'Un momento, estamos afinando todo',
+        'Ya casi estamos',
+        'No te vayas, esto se pone bueno',
+        'Armando tu panel personalizado',
+        'Verificando disponibilidad de servicios',
+        'Calentando motores',
+        'Estamos a punto de comenzar'
+      ]
+    });
+  }
+
+  return res.status(500).render('404', {
     pageTitle: 'Error interno',
     message: 'Ocurrio un error interno al cargar la informacion del servicio.',
     apiBaseUrl: PUBLIC_API_BASE_URL,
