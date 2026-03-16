@@ -2,7 +2,13 @@ const express = require('express');
 const pool = require('../db/pool');
 const { requireAdmin } = require('../middleware/auth');
 const { getRuntimeConfig, saveRuntimeConfig } = require('../services/runtimeConfigService');
-const { getCatalog, getAllServiceIds, updatePriceByServiceId } = require('../services/catalogService');
+const {
+  getCatalog,
+  getAllServiceIds,
+  updatePriceByServiceId,
+  convertCopToFinalUsd,
+  getUsdExchangeRate
+} = require('../services/catalogService');
 
 const router = express.Router();
 
@@ -30,6 +36,16 @@ function mapUserRow(row) {
 }
 
 function mapOrderRow(row) {
+  const services = Array.isArray(row.servicios) ? row.servicios : [];
+  let totalUsd = 0;
+
+  services.forEach((service) => {
+    const priceCop = Number(service.priceCop);
+    if (!service.isVariablePrice && Number.isFinite(priceCop) && priceCop > 0) {
+      totalUsd += convertCopToFinalUsd(priceCop);
+    }
+  });
+
   return {
     id: row.id,
     usuarioId: row.usuario_id,
@@ -40,8 +56,10 @@ function mapOrderRow(row) {
       contacto: row.contacto_valor
     },
     metodoPago: row.metodo_pago,
-    services: Array.isArray(row.servicios) ? row.servicios : [],
+    services,
     totalCop: Number(row.total_cop || 0),
+    totalUsd,
+    exchangeRate: getUsdExchangeRate(),
     estado: row.estado,
     createdAt: row.created_at,
     updatedAt: row.updated_at

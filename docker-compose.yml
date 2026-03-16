@@ -26,7 +26,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-skirk_boost}
       SESSION_SECRET: ${SESSION_SECRET:-change_me_session_secret}
       PEPPER: ${PEPPER:-change_me_pepper_value}
-      USD_VALUE: ${USD_VALUE:-2857}
+      USD_VALUE: ${USD_VALUE:-3694}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:3000}
       RUNTIME_CONFIG_PATH: /app/data/runtime-config.json
       ZONES_CONFIG_PATH: /app/data/exploration-zones.json
@@ -53,7 +53,6 @@ services:
       PORT: 3000
       API_BASE_URL: http://api:4000
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:4000}
-      USD_VALUE: ${USD_VALUE:-2857}
     depends_on:
       api:
         condition: service_healthy

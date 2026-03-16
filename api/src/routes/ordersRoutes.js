@@ -1,14 +1,31 @@
 const express = require('express');
 const pool = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
+const { convertCopToFinalUsd, getUsdExchangeRate } = require('../services/catalogService');
 
 const router = express.Router();
 const allowedPayment = new Set(['Nequi', 'PayPal']);
 const ORDER_STATUS_VALUES = new Set(['Cotizacion', 'En espera', 'Realizando', 'Finalizado']);
 const INITIAL_ORDER_STATUS = 'Cotizacion';
 
+function calculateOrderTotalUsd(services) {
+  let totalUsd = 0;
+
+  services.forEach((service) => {
+    const priceCop = Number(service.priceCop);
+    if (!service.isVariablePrice && Number.isFinite(priceCop) && priceCop > 0) {
+      totalUsd += convertCopToFinalUsd(priceCop);
+    }
+  });
+
+  return totalUsd;
+}
+
 function mapOrderRow(row) {
   const services = Array.isArray(row.servicios) ? row.servicios : [];
+  const totalCop = Number(row.total_cop || 0);
+  const totalUsd = calculateOrderTotalUsd(services);
+
   return {
     id: row.id,
     email: row.correo,
@@ -19,7 +36,9 @@ function mapOrderRow(row) {
     },
     metodoPago: row.metodo_pago,
     services,
-    totalCop: Number(row.total_cop || 0),
+    totalCop,
+    totalUsd,
+    exchangeRate: getUsdExchangeRate(),
     estado: ORDER_STATUS_VALUES.has(row.estado) ? row.estado : INITIAL_ORDER_STATUS,
     createdAt: row.created_at,
     updatedAt: row.updated_at
@@ -104,7 +123,6 @@ router.post('/', requireAuth, async (req, res, next) => {
         label: String(entry.label || ''),
         isVariablePrice: Boolean(entry.isVariablePrice),
         priceRangeCop: String(entry.priceRangeCop || ''),
-        priceRangeUsd: String(entry.priceRangeUsd || ''),
         priceCop: entry.priceCop === null ? null : Number(entry.priceCop || 0)
       }))
       .filter((entry) => {
@@ -140,6 +158,7 @@ router.post('/', requireAuth, async (req, res, next) => {
         totalCop += Math.round(service.priceCop);
       }
     }
+    const totalUsd = calculateOrderTotalUsd(sanitizedServices);
 
     const insertResult = await pool.query(
       `INSERT INTO ordenes
@@ -173,6 +192,8 @@ router.post('/', requireAuth, async (req, res, next) => {
         },
         metodoPago,
         totalCop,
+        totalUsd,
+        exchangeRate: getUsdExchangeRate(),
         estado: insertResult.rows[0].estado,
         updatedAt: insertResult.rows[0].updated_at
       }

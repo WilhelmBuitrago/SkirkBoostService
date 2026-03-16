@@ -60,7 +60,7 @@
                   data-price="<%= mission.priceCop %>"
                   data-mission-name="<%= mission.name %>"
                 />
-                <%= mission.name %> (+$ <%= formatCop(mission.priceCop) %> COP | +$ <%= formatUsd(convertCopToUsd(mission.priceCop)) %> USD)
+                <%= mission.name %> (+$ <%= formatCop(mission.priceCop) %> COP | +$ <%= mission.priceUsdFormatted || '-' %> USD)
               </label>
               <% }) %>
             </div>

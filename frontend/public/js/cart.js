@@ -1,7 +1,7 @@
 (function () {
   const apiBaseUrl = document.body.dataset.apiBaseUrl;
-  const exchangeRateRaw = Number(document.body.dataset.exchangeRate || 2857);
-  const exchangeRate = Number.isFinite(exchangeRateRaw) && exchangeRateRaw > 0 ? exchangeRateRaw : 2857;
+  const exchangeRateRaw = Number(document.body.dataset.exchangeRate);
+  const exchangeRate = Number.isFinite(exchangeRateRaw) && exchangeRateRaw > 0 ? exchangeRateRaw : null;
 
   const cartItemsContainer = document.getElementById('cart-items');
   const subtotalCopLabel = document.getElementById('subtotal-cop');
@@ -23,9 +23,23 @@
 
   function formatUsd(value) {
     return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(value);
+  }
+
+  function convertCopToFinalUsd(priceCop) {
+    if (!Number.isFinite(exchangeRate) || exchangeRate <= 0) {
+      return null;
+    }
+
+    const baseUsd = Number(priceCop || 0) / exchangeRate;
+    if (!Number.isFinite(baseUsd) || baseUsd <= 0) {
+      return 0;
+    }
+
+    const withFee = (baseUsd + 0.3) / 0.946;
+    return Math.ceil(withFee) + 1;
   }
 
   function resolveServiceFamily(item) {
@@ -176,6 +190,9 @@
       lines.push(`- ${service.label}`);
     });
     lines.push(`Total: $ ${formatCop(order.totalCop)} COP`);
+    if (Number.isFinite(Number(order.totalUsd))) {
+      lines.push(`Total USD: $ ${formatUsd(Number(order.totalUsd))} USD`);
+    }
 
     checkoutSummary.textContent = lines.join('\n');
     checkoutSummary.classList.remove('hidden');
@@ -231,6 +248,7 @@
     cartItemsContainer.innerHTML = '';
 
     let subtotalCop = 0;
+    let subtotalUsd = 0;
 
     items.forEach((item) => {
       const card = document.createElement('article');
@@ -252,7 +270,13 @@
       } else {
         subtotalCop += numericPriceCop;
         copText.textContent = `$ ${formatCop(numericPriceCop)} COP`;
-        usdText.textContent = `$ ${formatUsd(numericPriceCop / exchangeRate)} USD`;
+        const serviceUsd = convertCopToFinalUsd(numericPriceCop);
+        if (serviceUsd === null) {
+          usdText.textContent = 'USD no disponible';
+        } else {
+          subtotalUsd += serviceUsd;
+          usdText.textContent = `$ ${formatUsd(serviceUsd)} USD`;
+        }
       }
 
       const removeBtn = document.createElement('button');
@@ -287,11 +311,10 @@
       cartItemsContainer.appendChild(card);
     });
 
-    const subtotalUsd = subtotalCop / exchangeRate;
     subtotalCopLabel.textContent = formatCop(subtotalCop);
-    subtotalUsdLabel.textContent = formatUsd(subtotalUsd);
+    subtotalUsdLabel.textContent = Number.isFinite(subtotalUsd) ? formatUsd(subtotalUsd) : '-';
     totalCopLabel.textContent = formatCop(subtotalCop);
-    totalUsdLabel.textContent = formatUsd(subtotalUsd);
+    totalUsdLabel.textContent = Number.isFinite(subtotalUsd) ? formatUsd(subtotalUsd) : '-';
   }
 
   checkoutForm.addEventListener('submit', async (event) => {
@@ -336,8 +359,7 @@
       label: buildConfirmedLabel(item),
       priceCop: item.isVariablePrice ? null : Number(item.priceCop || 0),
       isVariablePrice: Boolean(item.isVariablePrice),
-      priceRangeCop: item.priceRangeCop || '',
-      priceRangeUsd: item.priceRangeUsd || ''
+      priceRangeCop: item.priceRangeCop || ''
     }));
 
     try {

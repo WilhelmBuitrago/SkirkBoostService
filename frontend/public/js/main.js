@@ -54,9 +54,23 @@
 
   function formatUsd(value) {
     return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(value);
+  }
+
+  function convertCopToFinalUsd(priceCop, rateValue) {
+    if (!Number.isFinite(rateValue) || rateValue <= 0) {
+      return null;
+    }
+
+    const baseUsd = Number(priceCop || 0) / rateValue;
+    if (!Number.isFinite(baseUsd) || baseUsd <= 0) {
+      return 0;
+    }
+
+    const withFee = (baseUsd + 0.3) / 0.946;
+    return Math.ceil(withFee) + 1;
   }
 
   function readWishOptions() {
@@ -112,7 +126,8 @@
           copNode.textContent = hasPrice ? formatCop(priceCop) : '-';
         }
         if (usdNode) {
-          usdNode.textContent = hasPrice ? formatUsd(priceCop / rate) : '-';
+          const usdValue = hasPrice ? convertCopToFinalUsd(priceCop, rate) : null;
+          usdNode.textContent = hasPrice && usdValue !== null ? formatUsd(usdValue) : '-';
         }
 
         addButton.dataset.serviceId = hasPrice && selectedOption ? String(selectedOption.serviceId || '') : '';
@@ -130,7 +145,7 @@
   }
 
   const pageRate = document.body ? Number(document.body.dataset.exchangeRate) : NaN;
-  const rate = Number.isFinite(pageRate) && pageRate > 0 ? pageRate : 2857;
+  const rate = Number.isFinite(pageRate) && pageRate > 0 ? pageRate : null;
 
   initWishFarmingBuilder(rate);
 
@@ -167,7 +182,8 @@
         return;
       }
       copLabel.textContent = formatCop(copValue);
-      usdLabel.textContent = formatUsd(copValue / rate);
+      const usdValue = convertCopToFinalUsd(copValue, rate);
+      usdLabel.textContent = usdValue === null ? '-' : formatUsd(usdValue);
     }
 
     if (ownedWeapon) {

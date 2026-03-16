@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const USD_VALUE = Number(process.env.USD_VALUE) || 2857;
+const USD_VALUE = Number(process.env.USD_VALUE) || 3694;
 const bundledZonesPath = path.join(__dirname, '..', '..', 'config', 'exploration-zones.json');
 const bundledServicesPath = path.join(__dirname, '..', '..', 'config', 'services.json');
 
@@ -29,13 +29,36 @@ function formatCop(value) {
 
 function formatUsd(value) {
   return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(value);
 }
 
-function convertCopToUsd(value) {
-  return value / USD_VALUE;
+function convertCopToUsdBase(value) {
+  const numericValue = Number(value || 0);
+  if (!Number.isFinite(numericValue) || numericValue <= 0) {
+    return 0;
+  }
+
+  return numericValue / USD_VALUE;
+}
+
+function applyUsdPricingFormula(usdValue) {
+  const numericUsd = Number(usdValue || 0);
+  if (!Number.isFinite(numericUsd) || numericUsd <= 0) {
+    return 0;
+  }
+
+  const withFee = (numericUsd + 0.3) / 0.946;
+  return Math.ceil(withFee) + 1;
+}
+
+function convertCopToFinalUsd(value) {
+  return applyUsdPricingFormula(convertCopToUsdBase(value));
+}
+
+function getUsdExchangeRate() {
+  return USD_VALUE;
 }
 
 function toSlug(label) {
@@ -64,12 +87,14 @@ function normalizeZone(zone) {
       ...mission,
       serviceId: `zone.${zone.id}.mission.${mission.id || toSlug(mission.name)}`,
       priceCopFormatted: mission.priceCop ? formatCop(mission.priceCop) : null,
-      priceUsdFormatted: mission.priceCop ? formatUsd(convertCopToUsd(mission.priceCop)) : null
+      priceUsdFormatted: mission.priceCop ? formatUsd(convertCopToFinalUsd(mission.priceCop)) : null
     })),
     basePriceCopFormatted: formatCop(Number(zone.basePriceCop || 0)),
-    basePriceUsdFormatted: formatUsd(convertCopToUsd(Number(zone.basePriceCop || 0))),
+    basePriceUsdFormatted: formatUsd(convertCopToFinalUsd(Number(zone.basePriceCop || 0))),
     missionBundleTotalCopFormatted: zone.missionBundleTotalCop ? formatCop(Number(zone.missionBundleTotalCop)) : null,
-    missionBundleTotalUsdFormatted: zone.missionBundleTotalCop ? formatUsd(convertCopToUsd(Number(zone.missionBundleTotalCop))) : null
+    missionBundleTotalUsdFormatted: zone.missionBundleTotalCop
+      ? formatUsd(convertCopToFinalUsd(Number(zone.missionBundleTotalCop)))
+      : null
   };
 }
 
@@ -80,26 +105,26 @@ function normalizeServices(services) {
     ...item,
     serviceId: `wishFarming.lessThan50.${index}`,
     priceCopFormatted: item.priceCop ? formatCop(item.priceCop) : null,
-    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToUsd(item.priceCop)) : null
+    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToFinalUsd(item.priceCop)) : null
   }));
 
   copy.wishFarming.moreThan50 = copy.wishFarming.moreThan50.map((item, index) => ({
     ...item,
     serviceId: `wishFarming.moreThan50.${index}`,
     priceCopFormatted: item.priceCop ? formatCop(item.priceCop) : null,
-    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToUsd(item.priceCop)) : null
+    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToFinalUsd(item.priceCop)) : null
   }));
 
   copy.missions.items = copy.missions.items.map((item, index) => ({
     ...item,
     serviceId: `missions.${item.id || toSlug(item.label) || index}`,
     priceCopFormatted: item.priceCop ? formatCop(item.priceCop) : null,
-    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToUsd(item.priceCop)) : null,
+    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToFinalUsd(item.priceCop)) : null,
     priceRangeCopFormatted:
       item.priceCopMin && item.priceCopMax ? `${formatCop(item.priceCopMin)} - ${formatCop(item.priceCopMax)}` : null,
     priceRangeUsdFormatted:
       item.priceCopMin && item.priceCopMax
-        ? `${formatUsd(convertCopToUsd(item.priceCopMin))} - ${formatUsd(convertCopToUsd(item.priceCopMax))}`
+        ? `${formatUsd(convertCopToFinalUsd(item.priceCopMin))} - ${formatUsd(convertCopToFinalUsd(item.priceCopMax))}`
         : null
   }));
 
@@ -107,16 +132,16 @@ function normalizeServices(services) {
     ...item,
     serviceId: `farming.${item.id || toSlug(item.label) || index}`,
     priceCopFormatted: item.priceCop ? formatCop(item.priceCop) : null,
-    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToUsd(item.priceCop)) : null,
+    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToFinalUsd(item.priceCop)) : null,
     withBooksPriceCopFormatted: item.withBooksPriceCop ? formatCop(item.withBooksPriceCop) : null,
-    withBooksPriceUsdFormatted: item.withBooksPriceCop ? formatUsd(convertCopToUsd(item.withBooksPriceCop)) : null
+    withBooksPriceUsdFormatted: item.withBooksPriceCop ? formatUsd(convertCopToFinalUsd(item.withBooksPriceCop)) : null
   }));
 
   copy.maintenance.items = copy.maintenance.items.map((item, index) => ({
     ...item,
     serviceId: `maintenance.${item.id || toSlug(item.label) || index}`,
     priceCopFormatted: item.priceCop ? formatCop(item.priceCop) : null,
-    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToUsd(item.priceCop)) : null
+    priceUsdFormatted: item.priceCop ? formatUsd(convertCopToFinalUsd(item.priceCop)) : null
   }));
 
   return copy;
@@ -278,5 +303,7 @@ function updatePriceByServiceId(serviceId, priceCop) {
 module.exports = {
   getCatalog,
   getAllServiceIds,
-  updatePriceByServiceId
+  updatePriceByServiceId,
+  convertCopToFinalUsd,
+  getUsdExchangeRate
 };

@@ -8,7 +8,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: USD_VALUE
-        value: "2857"
+        value: "3694"
       - key: FRONTEND_ORIGIN
         sync: false
       - key: SESSION_SECRET
@@ -38,8 +38,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: USD_VALUE
-        value: "2857"
       - key: API_BASE_URL
         sync: false
       - key: PUBLIC_API_BASE_URL

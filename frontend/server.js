@@ -28,13 +28,6 @@ function formatCop(value) {
   return new Intl.NumberFormat('es-CO').format(value);
 }
 
-function formatUsd(value) {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value);
-}
-
 class CatalogUnavailableError extends Error {
   constructor(message, cause) {
     super(message);
@@ -169,8 +162,6 @@ app.get('/exploracion/:zoneId', async (req, res, next) => {
       exchangeRate: data.exchangeRate,
       zone,
       formatCop,
-      formatUsd,
-      convertCopToUsd: (value) => value / Number(data.exchangeRate || 2857),
       platformStatus: data.runtimeConfig.platformStatus,
       apiBaseUrl: PUBLIC_API_BASE_URL
     });
@@ -340,14 +331,18 @@ app.get('/config/pedidos', async (_req, res) => {
   await renderConfigPage(res, 'config-pedidos', 'Configuracion - Pedidos', 'pedidos');
 });
 
-app.get('/carrito', async (_req, res) => {
-  const platformStatus = await fetchPlatformStatus();
-  res.render('cart', {
-    pageTitle: 'Carrito',
-    apiBaseUrl: PUBLIC_API_BASE_URL,
-    exchangeRate: Number(process.env.USD_VALUE) || 2857,
-    platformStatus
-  });
+app.get('/carrito', async (_req, res, next) => {
+  try {
+    const data = await fetchCatalog();
+    res.render('cart', {
+      pageTitle: 'Carrito',
+      apiBaseUrl: PUBLIC_API_BASE_URL,
+      exchangeRate: data.exchangeRate,
+      platformStatus: data.runtimeConfig.platformStatus
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get('/perfil', async (_req, res) => {

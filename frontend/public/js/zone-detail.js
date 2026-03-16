@@ -24,9 +24,23 @@
 
   function formatUsd(value) {
     return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(value);
+  }
+
+  function convertCopToFinalUsd(priceCop, rateValue) {
+    if (!Number.isFinite(rateValue) || rateValue <= 0) {
+      return null;
+    }
+
+    const baseUsd = Number(priceCop || 0) / rateValue;
+    if (!Number.isFinite(baseUsd) || baseUsd <= 0) {
+      return 0;
+    }
+
+    const withFee = (baseUsd + 0.3) / 0.946;
+    return Math.ceil(withFee) + 1;
   }
 
   const zoneName = document.body ? document.body.dataset.zoneName : '';
@@ -43,7 +57,7 @@
     name: zoneName,
     id: zoneId,
     basePriceCop,
-    exchangeRate: Number.isFinite(exchangeRate) && exchangeRate > 0 ? exchangeRate : 2857
+    exchangeRate: Number.isFinite(exchangeRate) && exchangeRate > 0 ? exchangeRate : null
   };
 
   const missionChecks = document.querySelectorAll('.js-mission');
@@ -77,7 +91,8 @@
     });
 
     totalCop.textContent = formatCop(total);
-    totalUsd.textContent = formatUsd(total / Number(zoneData.exchangeRate || 2857));
+    const totalFinalUsd = convertCopToFinalUsd(total, zoneData.exchangeRate);
+    totalUsd.textContent = totalFinalUsd === null ? '-' : formatUsd(totalFinalUsd);
     return total;
   }
 

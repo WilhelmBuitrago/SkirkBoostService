@@ -65,9 +65,21 @@ Se implementa con Argon2 + salt aleatorio + pepper:
 	- listado de items,
 	- precio individual,
 	- subtotal y total en COP y USD.
+	- total USD de orden calculado como suma de conversiones finales por servicio (no desde suma global COP).
 - Formulario temporal con:
 	- contacto: `TikTok`, `Instagram`, `Discord`.
 	- pago: `Nequi`, `PayPal`.
+
+## Regla COP a USD
+
+- La tasa base es `1 USD = 3694 COP` y se configura unicamente en API mediante `USD_VALUE`.
+- Conversion final por servicio:
+	1. `N = COP / 3694`
+	2. `(N + 0.30) / 0.946`
+	3. redondeo hacia arriba (`ceil`)
+	4. sumar `1 USD`
+- Para ordenes con varios servicios: se convierte cada servicio por separado y luego se suman los USD finales.
+- El frontend no define `USD_VALUE`; cuando necesita la tasa o montos USD, los consume desde el backend/catalogo.
 
 ## Primer arranque
 
