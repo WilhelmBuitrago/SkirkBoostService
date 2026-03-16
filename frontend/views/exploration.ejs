@@ -35,7 +35,7 @@
           <% nationZones.forEach((zone) => { %>
           <article class="zone-card <%= zone.isAvailable ? '' : 'is-disabled' %>">
             <a href="/exploracion/<%= zone.id %>" class="zone-card__link">
-              <div class="zone-card__image" style="background-image: linear-gradient(165deg, rgba(59,58,221,0.25), rgba(137,242,248,0.3)), url('/assets/zones/<%= zone.image %>');"></div>
+              <div class="zone-card__image" style="background-image: linear-gradient(165deg, rgba(59,58,221,0.25), rgba(137,242,248,0.3)), url('/assets/zones/<%= zone.id %>_s.webp');"></div>
               <div class="zone-card__info">
                 <h3><%= zone.name %></h3>
                 <p>
@@ -59,7 +59,7 @@
           <% extraZones.forEach((zone) => { %>
           <article class="zone-card <%= zone.isAvailable ? '' : 'is-disabled' %>">
             <a href="/exploracion/<%= zone.id %>" class="zone-card__link">
-              <div class="zone-card__image" style="background-image: linear-gradient(165deg, rgba(59,58,221,0.25), rgba(137,242,248,0.3)), url('/assets/zones/<%= zone.image %>');"></div>
+              <div class="zone-card__image" style="background-image: linear-gradient(165deg, rgba(59,58,221,0.25), rgba(137,242,248,0.3)), url('/assets/zones/<%= zone.id %>_s.webp');"></div>
               <div class="zone-card__info">
                 <h3><%= zone.name %></h3>
                 <p>

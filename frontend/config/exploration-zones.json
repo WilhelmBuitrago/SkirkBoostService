@@ -2,21 +2,21 @@
   {
     "id": "monstadt",
     "name": "Monstadt",
-    "image": "monstadt.svg",
+    "image": "monstadt_s.webp",
     "basePriceCop": 30000,
     "missionOptions": []
   },
   {
     "id": "liyue",
     "name": "Liyue",
-    "image": "liyue.svg",
+    "image": "liyue_s.webp",
     "basePriceCop": 55000,
     "missionOptions": []
   },
   {
     "id": "inazuma",
     "name": "Inazuma",
-    "image": "inazuma.svg",
+    "image": "inazuma_s.webp",
     "basePriceCop": 60000,
     "missionBundleTotalCop": 90000,
     "missionOptions": [
@@ -55,28 +55,28 @@
   {
     "id": "enkanomiya",
     "name": "Enkanomiya",
-    "image": "enkanomiya.svg",
+    "image": "enkanomiya_s.webp",
     "basePriceCop": 40000,
     "missionOptions": []
   },
   {
     "id": "sima",
     "name": "Sima (Los 2)",
-    "image": "sima.svg",
+    "image": "sima_s.webp",
     "basePriceCop": 50000,
     "missionOptions": []
   },
   {
     "id": "valle-chenyu",
     "name": "Valle Chenyu",
-    "image": "valle-chenyu.svg",
+    "image": "valle-chenyu_s.webp",
     "basePriceCop": 40000,
     "missionOptions": []
   },
   {
     "id": "sumeru-selva",
     "name": "Sumeru (Selva)",
-    "image": "sumeru-selva.svg",
+    "image": "sumeru-selva_s.webp",
     "basePriceCop": 100000,
     "missionBundleTotalCop": 150000,
     "missionOptions": [
@@ -90,7 +90,7 @@
   {
     "id": "sumeru-desiertos",
     "name": "Sumeru (Desiertos)",
-    "image": "sumeru-desiertos.svg",
+    "image": "sumeru-desiertos_s.webp",
     "basePriceCop": 175000,
     "missionBundleTotalCop": 250000,
     "missionOptions": [
@@ -124,7 +124,7 @@
   {
     "id": "fontaine",
     "name": "Fontaine",
-    "image": "fontaine.svg",
+    "image": "fontaine_s.webp",
     "basePriceCop": 90000,
     "missionBundleTotalCop": 265000,
     "missionOptions": [
@@ -159,35 +159,35 @@
   {
     "id": "natlan",
     "name": "Natlan",
-    "image": "natlan.svg",
+    "image": "natlan_s.webp",
     "basePriceCop": 180000,
     "missionOptions": []
   },
   {
     "id": "nod-krai",
     "name": "Nod Krai",
-    "image": "nod-krai.svg",
+    "image": "nod-krai_s.webp",
     "basePriceCop": 80000,
     "missionOptions": []
   },
   {
     "id": "montana-sagrada",
     "name": "Montana Sagrada",
-    "image": "montana-sagrada.svg",
+    "image": "montana-sagrada_s.webp",
     "basePriceCop": 30000,
     "missionOptions": []
   },
   {
     "id": "espinadragon",
     "name": "Espinadragon",
-    "image": "espinadragon.svg",
+    "image": "espinadragon_s.webp",
     "basePriceCop": 30000,
     "missionOptions": []
   },
   {
     "id": "mar-de-antano-petricor",
     "name": "Mar de Antano Petricor",
-    "image": "mar-de-antano-petricor.svg",
+    "image": "mar-de-antano-petricor_s.webp",
     "basePriceCop": 30000,
     "missionBundleTotalCop": 40000,
     "missionOptions": [
