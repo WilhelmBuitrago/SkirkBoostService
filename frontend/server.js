@@ -9,6 +9,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 const API_BASE_URL = process.env.API_BASE_URL || (isProduction ? '' : 'http://localhost:4000');
 const PUBLIC_API_BASE_URL = process.env.PUBLIC_API_BASE_URL || API_BASE_URL;
+const BOOT_WAKEUP_URL = process.env.BOOT_WAKEUP_URL || 'https://skirkboostservice-api.onrender.com/';
 
 if (!API_BASE_URL) {
   throw new Error('API_BASE_URL is required.');
@@ -373,6 +374,7 @@ app.use((err, _req, res, _next) => {
     return res.status(503).render('boot-loading', {
       pageTitle: 'Preparando Skirk Boost Service',
       apiBaseUrl: PUBLIC_API_BASE_URL,
+      bootWakeupUrl: BOOT_WAKEUP_URL,
       platformStatus: 'NO_ACTIVA',
       targetPath: requestedPath,
       bootMinDurationMs: 10000,

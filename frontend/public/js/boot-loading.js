@@ -31,10 +31,13 @@
 
   const bodyData = document.body.dataset;
   const targetPath = bodyData.targetPath || '/';
+  const wakeupUrl = (bodyData.bootWakeupUrl || 'https://skirkboostservice-api.onrender.com/').trim();
   const minDuration = Number(bodyData.bootMinDuration) || 10000;
   const maxDuration = Number(bodyData.bootMaxDuration) || 30000;
   const maxAttempts = Math.max(1, Number(bodyData.bootMaxAttempts) || 2);
   const frameMs = 120;
+  const wakeupTimeoutMs = 2800;
+  const progressCheckpoints = [25, 50, 75, 100];
 
   let cycleId = 0;
   let phraseTimer = null;
@@ -48,6 +51,17 @@
     progressFill.style.width = `${safeValue}%`;
     progressValue.textContent = `${safeValue}%`;
     progressBar.setAttribute('aria-valuenow', String(safeValue));
+  }
+
+  function clearPhraseTimer() {
+    if (phraseTimer) {
+      window.clearTimeout(phraseTimer);
+      phraseTimer = null;
+    }
+  }
+
+  function delay(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
   }
 
   function pickRandomMessage(previous) {
@@ -102,6 +116,62 @@
     }
   }
 
+  async function pingWakeupService() {
+    const abortController = new AbortController();
+    const timeout = window.setTimeout(() => abortController.abort(), wakeupTimeoutMs);
+
+    try {
+      await fetch(wakeupUrl, {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-store',
+        signal: abortController.signal
+      });
+      return true;
+    } catch (_error) {
+      return false;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  async function checkCatalogUntilReady(localCycleId, maxChecks) {
+    for (let index = 0; index < maxChecks; index += 1) {
+      if (localCycleId !== cycleId) {
+        return false;
+      }
+
+      const isReady = await checkAvailability();
+      if (isReady) {
+        return true;
+      }
+
+      if (index < maxChecks - 1) {
+        await delay(650);
+      }
+    }
+
+    return false;
+  }
+
+  async function completeAndTryRedirect(localCycleId) {
+    if (localCycleId !== cycleId) {
+      return false;
+    }
+
+    updateProgress(100);
+    mainMessage.textContent = 'API despierta. Cargando catalogo...';
+    const ready = await checkCatalogUntilReady(localCycleId, 4);
+
+    if (ready && localCycleId === cycleId) {
+      clearPhraseTimer();
+      window.location.assign(targetPath);
+      return true;
+    }
+
+    return false;
+  }
+
   function showFinalMessage() {
     mainMessage.textContent = 'No logramos conectar esta vez.';
     didacticMessage.hidden = true;
@@ -112,17 +182,23 @@
     cycleId += 1;
     const localCycleId = cycleId;
 
-    if (phraseTimer) {
-      window.clearTimeout(phraseTimer);
-      phraseTimer = null;
-    }
+    clearPhraseTimer();
 
     updateProgress(0);
+    mainMessage.textContent = 'Montando servicios y verificando disponibilidad.';
     attemptValue.textContent = `Intento ${attempt} de ${maxAttempts}`;
     didacticMessage.hidden = false;
     finalMessage.hidden = true;
 
     rotateDidacticMessages(localCycleId);
+
+    const initialWakeupReady = await pingWakeupService();
+    if (initialWakeupReady) {
+      const redirected = await completeAndTryRedirect(localCycleId);
+      if (redirected || localCycleId !== cycleId) {
+        return;
+      }
+    }
 
     const duration = randomInRange(minDuration, maxDuration);
     const totalSteps = Math.max(24, Math.floor(duration / frameMs));
@@ -130,6 +206,7 @@
     const totalWeight = weights.reduce((acc, value) => acc + value, 0);
 
     let progress = 0;
+    let checkpointIndex = 0;
     for (let index = 0; index < totalSteps; index += 1) {
       if (localCycleId !== cycleId) {
         return;
@@ -139,13 +216,22 @@
       const increment = isFinalStep ? (100 - progress) : (weights[index] / totalWeight) * 100;
       progress = Math.min(100, progress + increment);
       updateProgress(progress);
-      await new Promise((resolve) => window.setTimeout(resolve, frameMs));
+
+      while (checkpointIndex < progressCheckpoints.length && progress >= progressCheckpoints[checkpointIndex]) {
+        const wakeupReady = await pingWakeupService();
+        if (wakeupReady) {
+          const redirected = await completeAndTryRedirect(localCycleId);
+          if (redirected || localCycleId !== cycleId) {
+            return;
+          }
+        }
+        checkpointIndex += 1;
+      }
+
+      await delay(frameMs);
     }
 
-    if (phraseTimer) {
-      window.clearTimeout(phraseTimer);
-      phraseTimer = null;
-    }
+    clearPhraseTimer();
 
     const isReady = await checkAvailability();
     if (isReady) {
@@ -155,7 +241,7 @@
 
     if (attempt < maxAttempts) {
       mainMessage.textContent = 'Aun no esta listo. Reintentando automaticamente...';
-      await new Promise((resolve) => window.setTimeout(resolve, 850));
+      await delay(850);
       runAttempt(attempt + 1);
       return;
     }

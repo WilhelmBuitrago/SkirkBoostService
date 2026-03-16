@@ -31,7 +31,12 @@ Browser
 - Variables obligatorias en Render:
 	- API: `DATABASE_URL`, `FRONTEND_ORIGIN`, `SESSION_SECRET`, `PEPPER`, `NODE_ENV=production`
 	- API (bootstrap admin por entorno): `ADMIN_BOOTSTRAP_ENABLED=true`, `ADMIN_BOOTSTRAP_USER`, `ADMIN_BOOTSTRAP_PASSWORD`
-	- Frontend: `API_BASE_URL`, `PUBLIC_API_BASE_URL`, `NODE_ENV=production`
+	- Frontend: `API_BASE_URL`, `PUBLIC_API_BASE_URL`, `BOOT_WAKEUP_URL`, `NODE_ENV=production`
+
+Wake-up de API en cold start:
+- El frontend intenta despertar la API al cargar la pantalla de boot con `BOOT_WAKEUP_URL`.
+- Si no responde en el intento inicial, mantiene la barra actual y reintenta en 4 checkpoints visuales (25%, 50%, 75%, 100%).
+- Si responde en cualquier checkpoint, la barra se completa de inmediato y luego se valida catalogo via `/boot/availability` para continuar al destino solicitado.
 
 Notas de session/cookies:
 - En produccion la API configura cookies con `sameSite=none` y `secure=true` para compatibilidad cross-site (`credentials: include`).

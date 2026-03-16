@@ -17,8 +17,40 @@
     "id": "inazuma",
     "name": "Inazuma",
     "image": "inazuma.svg",
-    "basePriceCop": 90000,
-    "missionOptions": []
+    "basePriceCop": 60000,
+    "missionBundleTotalCop": 90000,
+    "missionOptions": [
+      {
+        "id": "through-the-mists",
+        "name": "Through the Mists",
+        "priceCop": 10000
+      },
+      {
+        "id": "sacred-sakura-cleansing-ritual",
+        "name": "Sacred Sakura Cleansing Ritual",
+        "priceCop": 9000
+      },
+      {
+        "id": "tatara-tales",
+        "name": "Tatara Tales",
+        "priceCop": 3000
+      },
+      {
+        "id": "orobashi's-legacy",
+        "name": "Orobashi's Legacy",
+        "priceCop": 3000
+      },
+      {
+        "id": "the-moon-bathed-deep",
+        "name": "The Moon-Bathed Deep",
+        "priceCop": 2500
+      },
+      {
+        "id": "seirai-stormchasers",
+        "name": "Seirai Stormchasers",
+        "priceCop": 2500
+      }
+    ]
   },
   {
     "id": "enkanomiya",
@@ -99,27 +131,28 @@
       {
         "id": "narzissenkreuz",
         "name": "Narzissenkreuz",
-        "priceCop": 36750
-      },
-      {
-        "id": "ancient-colors",
-        "name": "Ancient Colors",
-        "priceCop": 26250
+        "priceCop": 41000
       },
       {
         "id": "unfinished-comedy",
         "name": "Unfinished Comedy",
-        "priceCop": 36750
+        "priceCop": 41000
       },
       {
         "id": "fontaine-research-institute-chronicles",
         "name": "Fontaine Research Institute Chronicles",
-        "priceCop": 36750
+        "priceCop": 41000
       },
+      {
+        "id": "ancient-colors",
+        "name": "Ancient Colors",
+        "priceCop": 26000
+      },
+
       {
         "id": "the-wild-fairy-of-erinnyes",
         "name": "The Wild Fairy of Erinnyes",
-        "priceCop": 26250
+        "priceCop": 26000
       }
     ]
   },
