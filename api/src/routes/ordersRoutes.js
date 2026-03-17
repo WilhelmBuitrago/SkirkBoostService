@@ -1,7 +1,9 @@
 const express = require('express');
+const { randomUUID } = require('crypto');
 const pool = require('../db/pool');
 const { requireAuth } = require('../middleware/auth');
 const { convertCopToFinalUsd, getUsdExchangeRate } = require('../services/catalogService');
+const { notifyOrderForDm } = require('../services/disbotService');
 
 const router = express.Router();
 const allowedPayment = new Set(['Nequi', 'PayPal']);
@@ -159,6 +161,33 @@ router.post('/', requireAuth, async (req, res, next) => {
       }
     }
     const totalUsd = calculateOrderTotalUsd(sanitizedServices);
+
+    const requestId = randomUUID();
+    const pendingOrderRef = `PRE-DB-${requestId}`;
+
+    try {
+      await notifyOrderForDm({
+        requestId,
+        orderId: pendingOrderRef,
+        usuario: state.user.usuario,
+        email: state.user.email,
+        contacto: {
+          id: selectedContact.id,
+          plataforma: selectedContact.plataforma,
+          contacto: selectedContact.contacto
+        },
+        metodoPago,
+        services: sanitizedServices,
+        totalCop,
+        totalUsd,
+        estado: INITIAL_ORDER_STATUS
+      });
+    } catch (notifyError) {
+      console.error('Order notification failed before persistence:', notifyError.message);
+      return res.status(503).json({
+        error: 'Hubo un error, intenta mas tarde, si el problema persiste contacta con el administrador'
+      });
+    }
 
     const insertResult = await pool.query(
       `INSERT INTO ordenes

@@ -28,6 +28,9 @@ services:
       PEPPER: ${PEPPER:-change_me_pepper_value}
       USD_VALUE: ${USD_VALUE:-3694}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:3000}
+      DISBOT_BASE_URL: ${DISBOT_BASE_URL:-http://disbot:5000}
+      DISBOT_SHARED_SECRET: ${DISBOT_SHARED_SECRET:-}
+      DISBOT_TIMEOUT_MS: ${DISBOT_TIMEOUT_MS:-6000}
       RUNTIME_CONFIG_PATH: /app/data/runtime-config.json
       ZONES_CONFIG_PATH: /app/data/exploration-zones.json
       SERVICES_CONFIG_PATH: /app/data/services.json
@@ -37,6 +40,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      disbot:
+        condition: service_started
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
       interval: 10s
@@ -53,11 +58,25 @@ services:
       PORT: 3000
       API_BASE_URL: http://api:4000
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:4000}
+      BOOT_WAKEUP_URL: ${BOOT_WAKEUP_URL:-http://localhost:4000}
+      BOOT_WAKEUP_DISBOT_URL: ${BOOT_WAKEUP_DISBOT_URL:-http://localhost:5000}
     depends_on:
       api:
         condition: service_healthy
     ports:
       - "3000:3000"
+
+  disbot:
+    build:
+      context: ./DisBot
+    container_name: skirk-disbot
+    environment:
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-replace_with_real_token}
+      USER_ID: ${USER_ID:-0}
+      DISBOT_PORT: 5000
+      API_SHARED_SECRET: ${DISBOT_SHARED_SECRET:-}
+    ports:
+      - "5000:5000"
 
 volumes:
   pgdata:

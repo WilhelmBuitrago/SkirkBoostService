@@ -32,6 +32,7 @@
   const bodyData = document.body.dataset;
   const targetPath = bodyData.targetPath || '/';
   const wakeupUrl = (bodyData.bootWakeupUrl || 'https://skirkboostservice-api.onrender.com/').trim();
+  const disbotWakeupUrl = (bodyData.bootWakeupDisbotUrl || wakeupUrl).trim();
   const minDuration = Number(bodyData.bootMinDuration) || 10000;
   const maxDuration = Number(bodyData.bootMaxDuration) || 30000;
   const maxAttempts = Math.max(1, Number(bodyData.bootMaxAttempts) || 2);
@@ -116,12 +117,12 @@
     }
   }
 
-  async function pingWakeupService() {
+  async function pingService(url) {
     const abortController = new AbortController();
     const timeout = window.setTimeout(() => abortController.abort(), wakeupTimeoutMs);
 
     try {
-      await fetch(wakeupUrl, {
+      await fetch(url, {
         method: 'GET',
         mode: 'no-cors',
         cache: 'no-store',
@@ -133,6 +134,14 @@
     } finally {
       window.clearTimeout(timeout);
     }
+  }
+
+  function pingWakeupService() {
+    return pingService(wakeupUrl);
+  }
+
+  function pingDisbotWakeupService() {
+    return pingService(disbotWakeupUrl);
   }
 
   async function checkCatalogUntilReady(localCycleId, maxChecks) {
@@ -160,7 +169,7 @@
     }
 
     updateProgress(100);
-    mainMessage.textContent = 'API despierta. Cargando catalogo...';
+    mainMessage.textContent = 'API y DisBot despiertos. Cargando catalogo...';
     const ready = await checkCatalogUntilReady(localCycleId, 4);
 
     if (ready && localCycleId === cycleId) {
@@ -192,8 +201,11 @@
 
     rotateDidacticMessages(localCycleId);
 
-    const initialWakeupReady = await pingWakeupService();
-    if (initialWakeupReady) {
+    const [initialWakeupReady, initialDisbotReady] = await Promise.all([
+      pingWakeupService(),
+      pingDisbotWakeupService()
+    ]);
+    if (initialWakeupReady && initialDisbotReady) {
       const redirected = await completeAndTryRedirect(localCycleId);
       if (redirected || localCycleId !== cycleId) {
         return;
@@ -218,8 +230,11 @@
       updateProgress(progress);
 
       while (checkpointIndex < progressCheckpoints.length && progress >= progressCheckpoints[checkpointIndex]) {
-        const wakeupReady = await pingWakeupService();
-        if (wakeupReady) {
+        const [wakeupReady, disbotReady] = await Promise.all([
+          pingWakeupService(),
+          pingDisbotWakeupService()
+        ]);
+        if (wakeupReady && disbotReady) {
           const redirected = await completeAndTryRedirect(localCycleId);
           if (redirected || localCycleId !== cycleId) {
             return;

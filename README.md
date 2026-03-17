@@ -1,10 +1,11 @@
 # Skirk's Boost Service (Microservicios)
 
-Proyecto reestructurado en 3 microservicios con Docker:
+Proyecto reestructurado en 4 microservicios con Docker:
 
 - `frontend`: App web SSR con EJS (catalogo, login UI, carrito, config UI).
 - `api`: Backend Express (auth, roles, estado de plataforma, disponibilidad y precios).
 - `database`: Servicio Postgres para login/usuarios con roles.
+- `DisBot`: Orquestador Discord (discord.py) para notificar pedidos por DM.
 
 ## Arquitectura
 
@@ -12,6 +13,7 @@ Proyecto reestructurado en 3 microservicios con Docker:
 Browser
 	-> frontend (3000)
 	-> api (4000)
+	-> DisBot (5000)
 	-> database (5432)
 ```
 
@@ -30,13 +32,22 @@ Browser
 - El `docker-compose.yml` se mantiene para desarrollo local.
 - Variables obligatorias en Render:
 	- API: `DATABASE_URL`, `FRONTEND_ORIGIN`, `SESSION_SECRET`, `PEPPER`, `NODE_ENV=production`
+	- API (DisBot): `DISBOT_BASE_URL`, `DISBOT_SHARED_SECRET` (si se configura), `DISBOT_TIMEOUT_MS`
 	- API (bootstrap admin por entorno): `ADMIN_BOOTSTRAP_ENABLED=true`, `ADMIN_BOOTSTRAP_USER`, `ADMIN_BOOTSTRAP_PASSWORD`
-	- Frontend: `API_BASE_URL`, `PUBLIC_API_BASE_URL`, `BOOT_WAKEUP_URL`, `NODE_ENV=production`
+	- Frontend: `API_BASE_URL`, `PUBLIC_API_BASE_URL`, `BOOT_WAKEUP_URL`, `BOOT_WAKEUP_DISBOT_URL`, `NODE_ENV=production`
+	- DisBot: `DISCORD_BOT_TOKEN`, `USER_ID`, `API_SHARED_SECRET` (opcional), `DISBOT_PORT`
 
 Wake-up de API en cold start:
 - El frontend intenta despertar la API al cargar la pantalla de boot con `BOOT_WAKEUP_URL`.
-- Si no responde en el intento inicial, mantiene la barra actual y reintenta en 4 checkpoints visuales (25%, 50%, 75%, 100%).
-- Si responde en cualquier checkpoint, la barra se completa de inmediato y luego se valida catalogo via `/boot/availability` para continuar al destino solicitado.
+- El frontend tambien despierta DisBot con `BOOT_WAKEUP_DISBOT_URL`.
+- Si API o DisBot no responden en el intento inicial, mantiene la barra actual y reintenta en 4 checkpoints visuales (25%, 50%, 75%, 100%).
+- Solo cuando API y DisBot responden, la barra se completa de inmediato y luego se valida catalogo via `/boot/availability` para continuar al destino solicitado.
+
+Confirmacion de pedido con DisBot:
+- El frontend confirma pedido contra API.
+- La API notifica a DisBot para enviar DM al `USER_ID` configurado.
+- Solo si DisBot confirma (`accepted=true` y `dmSent=true`) la API guarda la orden en base de datos.
+- Si DisBot no confirma, la API devuelve error y la orden no se persiste.
 
 Notas de session/cookies:
 - En produccion la API configura cookies con `sameSite=none` y `secure=true` para compatibilidad cross-site (`credentials: include`).

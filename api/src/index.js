@@ -24,7 +24,7 @@ function isAdminBootstrapEnabled() {
 }
 
 function validateEnvironment() {
-  const required = ['DATABASE_URL', 'SESSION_SECRET', 'PEPPER'];
+  const required = ['DATABASE_URL', 'SESSION_SECRET', 'PEPPER', 'DISBOT_BASE_URL'];
   const missing = required.filter((key) => !process.env[key]);
 
   if (isProduction && !process.env.FRONTEND_ORIGIN) {

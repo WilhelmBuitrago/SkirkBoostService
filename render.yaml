@@ -25,6 +25,12 @@ services:
         fromDatabase:
           name: skirk-database
           property: connectionString
+      - key: DISBOT_BASE_URL
+        sync: false
+      - key: DISBOT_SHARED_SECRET
+        sync: false
+      - key: DISBOT_TIMEOUT_MS
+        value: "6000"
     disk:
       name: skirk-api-disk
       mountPath: /var/data
@@ -41,6 +47,25 @@ services:
       - key: API_BASE_URL
         sync: false
       - key: PUBLIC_API_BASE_URL
+        sync: false
+      - key: BOOT_WAKEUP_URL
+        sync: false
+      - key: BOOT_WAKEUP_DISBOT_URL
+        sync: false
+
+  - type: web
+    name: skirk-disbot
+    runtime: docker
+    rootDir: DisBot
+    healthCheckPath: /health
+    envVars:
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: USER_ID
+        sync: false
+      - key: DISBOT_PORT
+        value: "5000"
+      - key: API_SHARED_SECRET
         sync: false
 
 databases:
