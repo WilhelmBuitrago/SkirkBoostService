@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "python prueba.py && python prueba2.py"]
+CMD ["sh", "-c", "python app.py"]
