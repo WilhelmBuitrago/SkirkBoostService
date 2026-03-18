@@ -36,8 +36,8 @@ async function notifyOrderForDm(orderPayload) {
       throw new Error(`DisBot rejected notification (${response.status}).${upstreamMessage}`);
     }
 
-    if (!data.accepted || !data.dmSent) {
-      throw new Error('DisBot did not confirm DM delivery.');
+    if (!data.accepted || !data.enqueued) {
+      throw new Error('DisBot did not confirm task enqueue.');
     }
 
     return data;

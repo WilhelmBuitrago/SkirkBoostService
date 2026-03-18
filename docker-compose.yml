@@ -1,4 +1,16 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: skirk-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    ports:
+      - "6379:6379"
+
   database:
     build:
       context: ./database
@@ -75,6 +87,34 @@ services:
       USER_ID: ${USER_ID:-0}
       DISBOT_PORT: 5000
       API_SHARED_SECRET: ${DISBOT_SHARED_SECRET:-}
+      REDIS_URL: ${DISBOT_REDIS_URL:-redis://redis:6379/0}
+      QUEUE_NAME: ${DISBOT_QUEUE_NAME:-disbot:orders:notify}
+      MAIN_QUEUE: ${DISBOT_MAIN_QUEUE:-disbot:orders:notify}
+      PROCESSING_QUEUE: ${DISBOT_PROCESSING_QUEUE:-disbot:orders:notify:processing}
+      RETRY_QUEUE: ${DISBOT_RETRY_QUEUE:-disbot:orders:notify:retry}
+      FAILED_QUEUE: ${DISBOT_FAILED_QUEUE:-disbot:orders:notify:failed}
+      TASK_STORE_PREFIX: ${DISBOT_TASK_STORE_PREFIX:-disbot:task}
+      PROCESSED_PREFIX: ${DISBOT_PROCESSED_PREFIX:-processed}
+      PROCESSING_LOCK_PREFIX: ${DISBOT_PROCESSING_LOCK_PREFIX:-processing-lock}
+      FAILED_RETENTION_INDEX: ${DISBOT_FAILED_RETENTION_INDEX:-disbot:orders:notify:failed:ts}
+      DM_TASK_TIMEOUT_SEC: ${DISBOT_DM_TASK_TIMEOUT_SEC:-12}
+      DM_MAX_RETRIES: ${DISBOT_DM_MAX_RETRIES:-2}
+      DM_RETRY_BACKOFF_SEC: ${DISBOT_DM_RETRY_BACKOFF_SEC:-60}
+      MAX_RETRIES: ${DISBOT_MAX_RETRIES:-2}
+      RETRY_BACKOFF_BASE: ${DISBOT_RETRY_BACKOFF_BASE:-60}
+      RETRY_BACKOFF_MAX_SEC: ${DISBOT_RETRY_BACKOFF_MAX_SEC:-900}
+      RETRY_JITTER_PCT: ${DISBOT_RETRY_JITTER_PCT:-0.20}
+      WORKER_COUNT: ${DISBOT_WORKER_COUNT:-2}
+      RETRY_POLL_INTERVAL_SEC: ${DISBOT_RETRY_POLL_INTERVAL_SEC:-2}
+      ABANDONED_TASK_SEC: ${DISBOT_ABANDONED_TASK_SEC:-72}
+      PROCESSING_LOCK_TTL_SEC: ${DISBOT_PROCESSING_LOCK_TTL_SEC:-32}
+      PROCESSED_TTL_SEC: ${DISBOT_PROCESSED_TTL_SEC:-2592000}
+      FAILED_RETENTION_DAYS: ${DISBOT_FAILED_RETENTION_DAYS:-30}
+      MAINTENANCE_INTERVAL_SEC: ${DISBOT_MAINTENANCE_INTERVAL_SEC:-30}
+      BOOT_WAIT_SECONDS: ${DISBOT_BOOT_WAIT_SECONDS:-8}
+    depends_on:
+      redis:
+        condition: service_healthy
     ports:
       - "5000:5000"
 

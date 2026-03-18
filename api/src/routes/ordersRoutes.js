@@ -163,31 +163,6 @@ router.post('/', requireAuth, async (req, res, next) => {
     const totalUsd = calculateOrderTotalUsd(sanitizedServices);
 
     const requestId = randomUUID();
-    const pendingOrderRef = `PRE-DB-${requestId}`;
-
-    try {
-      await notifyOrderForDm({
-        requestId,
-        orderId: pendingOrderRef,
-        usuario: state.user.usuario,
-        email: state.user.email,
-        contacto: {
-          id: selectedContact.id,
-          plataforma: selectedContact.plataforma,
-          contacto: selectedContact.contacto
-        },
-        metodoPago,
-        services: sanitizedServices,
-        totalCop,
-        totalUsd,
-        estado: INITIAL_ORDER_STATUS
-      });
-    } catch (notifyError) {
-      console.error('Order notification failed before persistence:', notifyError.message);
-      return res.status(503).json({
-        error: 'Hubo un error, intenta mas tarde, si el problema persiste contacta con el administrador'
-      });
-    }
 
     const insertResult = await pool.query(
       `INSERT INTO ordenes
@@ -207,9 +182,51 @@ router.post('/', requireAuth, async (req, res, next) => {
       ]
     );
 
+    const persistedOrderId = insertResult.rows[0].id;
+    let notificationDispatch = {
+      attempted: true,
+      accepted: false,
+      enqueued: false
+    };
+
+    try {
+      const notifyResult = await notifyOrderForDm({
+        requestId,
+        orderId: persistedOrderId,
+        usuario: state.user.usuario,
+        email: state.user.email,
+        contacto: {
+          id: selectedContact.id,
+          plataforma: selectedContact.plataforma,
+          contacto: selectedContact.contacto
+        },
+        metodoPago,
+        services: sanitizedServices,
+        totalCop,
+        totalUsd,
+        estado: INITIAL_ORDER_STATUS
+      });
+
+      notificationDispatch = {
+        attempted: true,
+        accepted: Boolean(notifyResult.accepted),
+        enqueued: Boolean(notifyResult.enqueued),
+        jobId: notifyResult.jobId || null
+      };
+    } catch (notifyError) {
+      console.warn(
+        'Order notification dispatch failed after persistence:',
+        JSON.stringify({
+          orderId: persistedOrderId,
+          requestId,
+          message: notifyError.message
+        })
+      );
+    }
+
     return res.status(201).json({
       order: {
-        id: insertResult.rows[0].id,
+        id: persistedOrderId,
         createdAt: insertResult.rows[0].created_at,
         services: sanitizedServices,
         email: state.user.email,
@@ -225,7 +242,8 @@ router.post('/', requireAuth, async (req, res, next) => {
         exchangeRate: getUsdExchangeRate(),
         estado: insertResult.rows[0].estado,
         updatedAt: insertResult.rows[0].updated_at
-      }
+      },
+      notification: notificationDispatch
     });
   } catch (error) {
     return next(error);
