@@ -241,6 +241,7 @@ router.put('/users/:id', async (req, res, next) => {
 });
 
 router.delete('/users/:id', async (req, res, next) => {
+  let client;
   try {
     const userId = Number(req.params.id);
     if (!Number.isInteger(userId) || userId <= 0) {
@@ -251,22 +252,77 @@ router.delete('/users/:id', async (req, res, next) => {
       return res.status(400).json({ error: 'No puedes eliminar tu propio usuario en sesion' });
     }
 
-    const targetResult = await pool.query('SELECT id, rol FROM usuarios WHERE id = $1 LIMIT 1', [userId]);
+    client = await pool.connect();
+    await client.query('BEGIN');
+
+    const targetResult = await client.query('SELECT id, rol FROM usuarios WHERE id = $1 LIMIT 1', [userId]);
     if (targetResult.rowCount === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
     if (targetResult.rows[0].rol === 'administrador') {
-      const adminCountResult = await pool.query("SELECT COUNT(*)::int AS total FROM usuarios WHERE rol = 'administrador'");
+      const adminCountResult = await client.query("SELECT COUNT(*)::int AS total FROM usuarios WHERE rol = 'administrador'");
       if (adminCountResult.rows[0].total <= 1) {
+        await client.query('ROLLBACK');
         return res.status(400).json({ error: 'No puedes eliminar el ultimo administrador' });
       }
     }
 
-    await pool.query('DELETE FROM usuarios WHERE id = $1', [userId]);
+    const refsResult = await client.query(
+      `SELECT
+         (SELECT COUNT(*)::int FROM orders WHERE user_id = $1) AS orders_count,
+         (SELECT COUNT(*)::int FROM order_notifications WHERE user_id = $1) AS notifications_count,
+         (SELECT COUNT(*)::int FROM ordenes WHERE usuario_id = $1) AS legacy_orders_count`,
+      [userId]
+    );
+
+    const refs = refsResult.rows[0] || {
+      orders_count: 0,
+      notifications_count: 0,
+      legacy_orders_count: 0
+    };
+
+    const totalRefs =
+      Number(refs.orders_count || 0) +
+      Number(refs.notifications_count || 0) +
+      Number(refs.legacy_orders_count || 0);
+
+    if (totalRefs > 0) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({
+        error: 'No puedes eliminar este usuario porque tiene pedidos o notificaciones asociadas',
+        references: {
+          orders: Number(refs.orders_count || 0),
+          orderNotifications: Number(refs.notifications_count || 0),
+          legacyOrders: Number(refs.legacy_orders_count || 0)
+        }
+      });
+    }
+
+    await client.query('DELETE FROM usuarios WHERE id = $1', [userId]);
+    await client.query('COMMIT');
     return res.json({ ok: true });
   } catch (error) {
+    if (client) {
+      try {
+        await client.query('ROLLBACK');
+      } catch (_rollbackError) {
+        // Ignore rollback errors and preserve original error handling.
+      }
+    }
+
+    if (error && error.code === '23503') {
+      return res.status(409).json({
+        error: 'No puedes eliminar este usuario porque tiene pedidos o notificaciones asociadas'
+      });
+    }
+
     return next(error);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 });
 

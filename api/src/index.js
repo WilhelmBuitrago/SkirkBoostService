@@ -13,7 +13,8 @@ dotenv.config();
 const authRoutes = require('./routes/authRoutes');
 const catalogRoutes = require('./routes/catalogRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const ordersRoutes = require('./routes/ordersRoutes');
+const ordersV1Routes = require('./routes/v1/ordersRoutes');
+const { startOrderNotificationJobs, stopOrderNotificationJobs } = require('./jobs/orderNotificationJobs');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -24,7 +25,7 @@ function isAdminBootstrapEnabled() {
 }
 
 function validateEnvironment() {
-  const required = ['DATABASE_URL', 'SESSION_SECRET', 'PEPPER', 'DISBOT_BASE_URL'];
+  const required = ['DATABASE_URL', 'SESSION_SECRET', 'PEPPER', 'DISBOT_BASE_URL', 'DISBOT_SHARED_SECRET'];
   const missing = required.filter((key) => !process.env[key]);
 
   if (isProduction && !process.env.FRONTEND_ORIGIN) {
@@ -174,10 +175,10 @@ app.get('/', async (_req, res) => {
   }
 });
 
-app.use('/auth', authRoutes);
-app.use('/catalog', catalogRoutes);
-app.use('/admin', adminRoutes);
-app.use('/orders', ordersRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/catalog', catalogRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1', ordersV1Routes);
 
 app.use((err, _req, res, _next) => {
   console.error(isProduction ? err.message : err);
@@ -193,6 +194,8 @@ async function startServer() {
     const externalUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
     console.log(`API activa en ${externalUrl}`);
   });
+
+  startOrderNotificationJobs();
 }
 
 startServer().catch(async (error) => {
@@ -202,6 +205,8 @@ startServer().catch(async (error) => {
 });
 
 async function shutdown() {
+  stopOrderNotificationJobs();
+
   if (!server) {
     await pool.end();
     process.exit(0);

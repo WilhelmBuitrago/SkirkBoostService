@@ -12,6 +12,18 @@ const PUBLIC_API_BASE_URL = process.env.PUBLIC_API_BASE_URL || API_BASE_URL;
 const BOOT_WAKEUP_URL = process.env.BOOT_WAKEUP_URL || 'https://skirkboostservice-api.onrender.com/';
 const BOOT_WAKEUP_DISBOT_URL = process.env.BOOT_WAKEUP_DISBOT_URL || BOOT_WAKEUP_URL;
 
+function withApiV1(baseUrl) {
+  const normalized = String(baseUrl || '').trim().replace(/\/$/, '');
+  if (normalized.endsWith('/api/v1')) {
+    return normalized;
+  }
+
+  return `${normalized}/api/v1`;
+}
+
+const API_V1_BASE_URL = withApiV1(API_BASE_URL);
+const PUBLIC_API_V1_BASE_URL = withApiV1(PUBLIC_API_BASE_URL);
+
 if (!API_BASE_URL) {
   throw new Error('API_BASE_URL is required.');
 }
@@ -43,7 +55,7 @@ async function fetchCatalog() {
   const timeout = setTimeout(() => abortController.abort(), 5000);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/catalog`, {
+    const response = await fetch(`${API_V1_BASE_URL}/catalog`, {
       headers: { 'Content-Type': 'application/json' },
       signal: abortController.signal
     });
@@ -138,7 +150,7 @@ app.get('/', async (_req, res, next) => {
       exchangeRate: data.exchangeRate,
       serviceCards,
       platformStatus: data.runtimeConfig.platformStatus,
-      apiBaseUrl: PUBLIC_API_BASE_URL
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL
     });
   } catch (error) {
     next(error);
@@ -154,7 +166,7 @@ app.get('/exploracion/:zoneId', async (req, res, next) => {
       return res.status(404).render('404', {
         pageTitle: 'Zona no encontrada',
         message: 'La region solicitada no existe o fue removida del catalogo.',
-        apiBaseUrl: PUBLIC_API_BASE_URL,
+        apiBaseUrl: PUBLIC_API_V1_BASE_URL,
         platformStatus: data.runtimeConfig.platformStatus
       });
     }
@@ -165,7 +177,7 @@ app.get('/exploracion/:zoneId', async (req, res, next) => {
       zone,
       formatCop,
       platformStatus: data.runtimeConfig.platformStatus,
-      apiBaseUrl: PUBLIC_API_BASE_URL
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL
     });
   } catch (error) {
     return next(error);
@@ -179,7 +191,7 @@ app.get('/exploracion', async (_req, res, next) => {
       pageTitle: 'Exploracion por regiones',
       zones: data.zones,
       platformStatus: data.runtimeConfig.platformStatus,
-      apiBaseUrl: PUBLIC_API_BASE_URL
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL
     });
   } catch (error) {
     next(error);
@@ -194,7 +206,7 @@ app.get('/farmeo-deseos', async (_req, res, next) => {
       wishFarming: data.services.wishFarming,
       exchangeRate: data.exchangeRate,
       platformStatus: data.runtimeConfig.platformStatus,
-      apiBaseUrl: PUBLIC_API_BASE_URL
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL
     });
   } catch (error) {
     next(error);
@@ -209,7 +221,7 @@ app.get('/misiones', async (_req, res, next) => {
       missions: data.services.missions,
       exchangeRate: data.exchangeRate,
       platformStatus: data.runtimeConfig.platformStatus,
-      apiBaseUrl: PUBLIC_API_BASE_URL
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL
     });
   } catch (error) {
     next(error);
@@ -228,7 +240,7 @@ app.get('/farmeo', async (_req, res, next) => {
       },
       exchangeRate: data.exchangeRate,
       platformStatus: data.runtimeConfig.platformStatus,
-      apiBaseUrl: PUBLIC_API_BASE_URL
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL
     });
   } catch (error) {
     next(error);
@@ -244,7 +256,7 @@ app.get('/ascension', async (_req, res, next) => {
       return res.status(404).render('404', {
         pageTitle: 'Servicio no encontrado',
         message: 'No se encontro el servicio de ascension de personajes.',
-        apiBaseUrl: PUBLIC_API_BASE_URL,
+        apiBaseUrl: PUBLIC_API_V1_BASE_URL,
         platformStatus: data.runtimeConfig.platformStatus
       });
     }
@@ -254,7 +266,7 @@ app.get('/ascension', async (_req, res, next) => {
       ascensionItem,
       exchangeRate: data.exchangeRate,
       platformStatus: data.runtimeConfig.platformStatus,
-      apiBaseUrl: PUBLIC_API_BASE_URL
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL
     });
   } catch (error) {
     return next(error);
@@ -269,7 +281,7 @@ app.get('/mantenimiento', async (_req, res, next) => {
       maintenance: data.services.maintenance,
       exchangeRate: data.exchangeRate,
       platformStatus: data.runtimeConfig.platformStatus,
-      apiBaseUrl: PUBLIC_API_BASE_URL
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL
     });
   } catch (error) {
     next(error);
@@ -280,7 +292,7 @@ app.get('/login', async (_req, res) => {
   const platformStatus = await fetchPlatformStatus();
   res.render('login', {
     pageTitle: 'Ingresar',
-    apiBaseUrl: PUBLIC_API_BASE_URL,
+    apiBaseUrl: PUBLIC_API_V1_BASE_URL,
     platformStatus
   });
 });
@@ -289,7 +301,7 @@ app.get('/registro', async (_req, res) => {
   const platformStatus = await fetchPlatformStatus();
   res.render('registro', {
     pageTitle: 'Registrar - Paso 1',
-    apiBaseUrl: PUBLIC_API_BASE_URL,
+    apiBaseUrl: PUBLIC_API_V1_BASE_URL,
     platformStatus
   });
 });
@@ -298,7 +310,7 @@ app.get('/registro-contacto', async (_req, res) => {
   const platformStatus = await fetchPlatformStatus();
   res.render('registro-contacto', {
     pageTitle: 'Registrar - Paso 2',
-    apiBaseUrl: PUBLIC_API_BASE_URL,
+    apiBaseUrl: PUBLIC_API_V1_BASE_URL,
     platformStatus
   });
 });
@@ -307,7 +319,7 @@ async function renderConfigPage(res, viewName, pageTitle, activeConfigSection) {
   const platformStatus = await fetchPlatformStatus();
   res.render(viewName, {
     pageTitle,
-    apiBaseUrl: PUBLIC_API_BASE_URL,
+    apiBaseUrl: PUBLIC_API_V1_BASE_URL,
     platformStatus,
     activeConfigSection
   });
@@ -338,7 +350,7 @@ app.get('/carrito', async (_req, res, next) => {
     const data = await fetchCatalog();
     res.render('cart', {
       pageTitle: 'Carrito',
-      apiBaseUrl: PUBLIC_API_BASE_URL,
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL,
       exchangeRate: data.exchangeRate,
       platformStatus: data.runtimeConfig.platformStatus
     });
@@ -351,7 +363,7 @@ app.get('/perfil', async (_req, res) => {
   const platformStatus = await fetchPlatformStatus();
   res.render('perfil', {
     pageTitle: 'Perfil',
-    apiBaseUrl: PUBLIC_API_BASE_URL,
+    apiBaseUrl: PUBLIC_API_V1_BASE_URL,
     platformStatus
   });
 });
@@ -374,7 +386,7 @@ app.use((err, _req, res, _next) => {
 
     return res.status(503).render('boot-loading', {
       pageTitle: 'Preparando Skirk Boost Service',
-      apiBaseUrl: PUBLIC_API_BASE_URL,
+      apiBaseUrl: PUBLIC_API_V1_BASE_URL,
       bootWakeupUrl: BOOT_WAKEUP_URL,
       bootWakeupDisbotUrl: BOOT_WAKEUP_DISBOT_URL,
       platformStatus: 'NO_ACTIVA',
@@ -402,7 +414,7 @@ app.use((err, _req, res, _next) => {
   return res.status(500).render('404', {
     pageTitle: 'Error interno',
     message: 'Ocurrio un error interno al cargar la informacion del servicio.',
-    apiBaseUrl: PUBLIC_API_BASE_URL,
+    apiBaseUrl: PUBLIC_API_V1_BASE_URL,
     platformStatus: 'NO_ACTIVA'
   });
 });

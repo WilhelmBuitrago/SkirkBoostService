@@ -358,14 +358,16 @@ router.post('/logout', (req, res) => {
   });
 });
 
-router.get('/me', (req, res) => {
+router.get('/me', (req, res, next) => {
   if (!req.session || !req.session.user) {
     return res.status(401).json({ authenticated: false });
   }
 
   return buildAuthPayload(req.session.user)
     .then((payload) => res.json(payload))
-    .catch(() => res.status(500).json({ error: 'Error interno del API' }));
+    .catch((error) => {
+      return next(error);
+    });
 });
 
 router.get('/contacts', async (req, res) => {

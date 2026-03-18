@@ -12,7 +12,21 @@
   const ordersStatusFilter = document.getElementById('orders-status-filter');
   const ordersTableBody = document.getElementById('orders-table-body');
   const message = document.getElementById('config-message');
-  const orderStatusValues = ['Cotizacion', 'En espera', 'Realizando', 'Finalizado'];
+  const orderStatusValues = ['IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+  const legacyToV1Status = {
+    Cotizacion: 'PENDING',
+    'En espera': 'NOTIFIED',
+    Realizando: 'IN_PROGRESS',
+    Finalizado: 'COMPLETED'
+  };
+  const v1ToLegacyStatus = {
+    PENDING: 'Cotizacion',
+    NOTIFIED: 'En espera',
+    IN_PROGRESS: 'Realizando',
+    COMPLETED: 'Finalizado',
+    FAILED_NOTIFY: 'Cotizacion',
+    CANCELLED: 'Cancelado'
+  };
 
   let currentConfig = null;
   let allServices = [];
@@ -358,12 +372,26 @@
       .join(', ');
   }
 
+  function toLegacyOrderShape(order) {
+    return {
+      id: order.orderId,
+      usuario: order.usuario || '-',
+      email: order.email || '-',
+      contacto: { plataforma: '', contacto: '' },
+      metodoPago: '-',
+      services: [],
+      estado: v1ToLegacyStatus[order.status] || order.status,
+      _rawStatus: order.status
+    };
+  }
+
   async function updateOrderStatus(orderId, estado) {
-    const response = await fetch(`${apiBaseUrl}/admin/orders/${orderId}`, {
-      method: 'PUT',
+    const status = legacyToV1Status[estado] || estado;
+    const response = await fetch(`${apiBaseUrl}/orders/admin/${orderId}/status`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ estado })
+      body: JSON.stringify({ status })
     });
 
     const data = await response.json();
@@ -371,11 +399,11 @@
       throw new Error(data.error || 'No fue posible actualizar el estado del pedido');
     }
 
-    return data.order;
+    return toLegacyOrderShape(data.order || {});
   }
 
   async function removeOrder(orderId) {
-    const response = await fetch(`${apiBaseUrl}/admin/orders/${orderId}`, {
+    const response = await fetch(`${apiBaseUrl}/orders/admin/${orderId}`, {
       method: 'DELETE',
       credentials: 'include'
     });
@@ -506,11 +534,11 @@
         params.set('q', q);
       }
       if (estado) {
-        params.set('estado', estado);
+        params.set('status', (legacyToV1Status[estado] || estado).toUpperCase());
       }
 
       const query = params.toString();
-      const url = query ? `${apiBaseUrl}/admin/orders?${query}` : `${apiBaseUrl}/admin/orders`;
+      const url = query ? `${apiBaseUrl}/orders/admin?${query}` : `${apiBaseUrl}/orders/admin`;
       const response = await fetch(url, {
         credentials: 'include'
       });
@@ -520,7 +548,7 @@
         throw new Error(data.error || 'No se pudieron cargar los pedidos');
       }
 
-      allOrders = Array.isArray(data.orders) ? data.orders : [];
+      allOrders = Array.isArray(data.orders) ? data.orders.map((entry) => toLegacyOrderShape(entry)) : [];
       renderOrdersTable();
     } catch (error) {
       showMessage(error.message, true);

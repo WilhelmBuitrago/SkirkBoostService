@@ -19,25 +19,28 @@
         <section class="service-section config-content">
           <h1>Pedidos</h1>
           <div class="cards-inline">
-            <input id="orders-search" class="text-input" placeholder="Filtrar por usuario/correo/contacto..." />
+            <input id="orders-search" class="text-input" placeholder="Filtrar por ID, usuario o correo..." />
             <select id="orders-status-filter" class="text-input">
               <option value="">Todos los estados</option>
-              <option value="Cotizacion">Cotizacion</option>
-              <option value="En espera">En espera</option>
-              <option value="Realizando">Realizando</option>
-              <option value="Finalizado">Finalizado</option>
+              <option value="PENDING">Pendiente</option>
+              <option value="NOTIFIED">Notificado</option>
+              <option value="IN_PROGRESS">En progreso</option>
+              <option value="COMPLETED">Completado</option>
+              <option value="FAILED_NOTIFY">Fallo notificacion</option>
+              <option value="CANCELLED">Cancelado</option>
             </select>
           </div>
           <div class="users-table-wrap">
             <table id="orders-table" class="users-table">
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th>Order ID</th>
                   <th>Usuario</th>
                   <th>Correo</th>
-                  <th>Contacto</th>
-                  <th>Metodo</th>
-                  <th>Servicios</th>
+                  <th>Servicios solicitados</th>
+                  <th>Total</th>
+                  <th>Notificacion</th>
+                  <th>Actualizado</th>
                   <th>Estado</th>
                   <th>Acciones</th>
                 </tr>

@@ -13,6 +13,10 @@
     message.style.color = isError ? '#ff8b8b' : '#89f2f8';
   }
 
+  function safeParseJson(response) {
+    return response.json().catch(() => ({}));
+  }
+
   function formatDate(value) {
     if (!value) {
       return '-';
@@ -94,11 +98,15 @@
         credentials: 'include'
       });
 
-      if (!authResponse.ok) {
+      if (authResponse.status === 401 || authResponse.status === 403) {
         throw new Error('Debes iniciar sesion para ver tu perfil.');
       }
 
-      const authData = await authResponse.json();
+      if (!authResponse.ok) {
+        throw new Error('No fue posible verificar tu sesion en este momento.');
+      }
+
+      const authData = await safeParseJson(authResponse);
       if (!authData.authenticated) {
         throw new Error('Debes iniciar sesion para ver tu perfil.');
       }
@@ -108,10 +116,17 @@
       const ordersResponse = await fetch(`${apiBaseUrl}/orders`, {
         credentials: 'include'
       });
-      const ordersData = await ordersResponse.json().catch(() => ({}));
+
+      if (ordersResponse.status === 401 || ordersResponse.status === 403) {
+        throw new Error('Debes iniciar sesion para ver tu perfil.');
+      }
+
+      const ordersData = await safeParseJson(ordersResponse);
 
       if (!ordersResponse.ok) {
-        throw new Error(ordersData.error || 'No fue posible cargar tus pedidos.');
+        showMessage(ordersData.error || 'No fue posible cargar tus pedidos por un error interno.', true);
+        renderOrders([]);
+        return;
       }
 
       const orders = Array.isArray(ordersData.orders) ? ordersData.orders : [];
@@ -119,9 +134,12 @@
       showMessage('Pedidos cargados.', false);
     } catch (error) {
       showMessage(error.message, true);
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 800);
+
+      if (error.message === 'Debes iniciar sesion para ver tu perfil.') {
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 800);
+      }
     }
   }
 

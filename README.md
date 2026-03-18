@@ -3,9 +3,9 @@
 Proyecto reestructurado en 4 microservicios con Docker:
 
 - `frontend`: App web SSR con EJS (catalogo, login UI, carrito, config UI).
-- `api`: Backend Express (auth, roles, estado de plataforma, disponibilidad y precios).
+- `api`: Backend Express (auth, roles, catalogo, ordenes v1, retries y scheduler).
 - `database`: Servicio Postgres para login/usuarios con roles.
-- `DisBot`: Orquestador Discord (discord.py) para notificar pedidos por DM.
+- `DisBot`: Servicio desacoplado de notificacion DM (sin logica de negocio).
 
 ## Arquitectura
 
@@ -32,10 +32,11 @@ Browser
 - El `docker-compose.yml` se mantiene para desarrollo local.
 - Variables obligatorias en Render:
 	- API: `DATABASE_URL`, `FRONTEND_ORIGIN`, `SESSION_SECRET`, `PEPPER`, `NODE_ENV=production`
-	- API (DisBot): `DISBOT_BASE_URL`, `DISBOT_SHARED_SECRET` (si se configura), `DISBOT_TIMEOUT_MS`
+	- API (DisBot): `DISBOT_BASE_URL`, `DISBOT_SHARED_SECRET`, `DISBOT_TIMEOUT_MS`
+	- API (Orders v1): `ORDER_NOTIFY_MAX_RETRIES`, `ORDER_NOTIFY_RETRY_BASE_SECONDS`, `ORDER_NOTIFY_BATCH_SIZE`, `ORDER_NOTIFY_SCHEDULER_INTERVAL_SECONDS`, `ORDER_NOTIFY_RETENTION_DAYS`
 	- API (bootstrap admin por entorno): `ADMIN_BOOTSTRAP_ENABLED=true`, `ADMIN_BOOTSTRAP_USER`, `ADMIN_BOOTSTRAP_PASSWORD`
 	- Frontend: `API_BASE_URL`, `PUBLIC_API_BASE_URL`, `BOOT_WAKEUP_URL`, `BOOT_WAKEUP_DISBOT_URL`, `NODE_ENV=production`
-	- DisBot: `DISCORD_BOT_TOKEN`, `USER_ID`, `API_SHARED_SECRET` (opcional), `DISBOT_PORT`
+	- DisBot: `DISCORD_BOT_TOKEN`, `USER_ID`, `API_SHARED_SECRET`, `DISBOT_PORT`, `DISBOT_SYNC_ONLY=true`
 
 Wake-up de API en cold start:
 - El frontend intenta despertar la API al cargar la pantalla de boot con `BOOT_WAKEUP_URL`.
@@ -45,9 +46,10 @@ Wake-up de API en cold start:
 
 Confirmacion de pedido con DisBot:
 - El frontend confirma pedido contra API.
+- La API persiste la orden y su registro de notificacion en PostgreSQL.
 - La API notifica a DisBot para enviar DM al `USER_ID` configurado.
-- Solo si DisBot confirma (`accepted=true` y `dmSent=true`) la API guarda la orden en base de datos.
-- Si DisBot no confirma, la API devuelve error y la orden no se persiste.
+- Si la notificacion falla temporalmente, la API agenda retry con backoff exponencial.
+- DisBot solo responde `success=true/false` y `error` opcional.
 
 Notas de session/cookies:
 - En produccion la API configura cookies con `sameSite=none` y `secure=true` para compatibilidad cross-site (`credentials: include`).
@@ -118,6 +120,62 @@ docker compose up --build
 
 Nota: la creacion es idempotente. Si ya existe un usuario con rol `administrador`, no se crea otro.
 
+## Ordenes v1 y notificaciones
+
+- Namespace obligatorio: `/api/v1/...`
+- API centraliza:
+	- creacion de orden
+	- idempotencia
+	- estados de orden
+	- retries
+	- scheduler y limpieza
+- DisBot solo envia DM y responde:
+
+```json
+{
+  "success": true
+}
+```
+
+o
+
+```json
+{
+  "success": false,
+  "error": "optional"
+}
+```
+
+Estados de orden v1:
+- `PENDING`
+- `NOTIFIED`
+- `IN_PROGRESS`
+- `COMPLETED`
+- `FAILED_NOTIFY`
+- `CANCELLED`
+
+Tabla de notificaciones:
+- `order_notifications` con `status` (`pending`, `retry`, `sent`, `failed`), `retry_count`, `next_retry_at`, `last_error`, `completed_at`.
+
+Query de scheduler (API):
+
+```sql
+SELECT n.order_id
+FROM order_notifications n
+WHERE n.status = 'retry'
+AND n.next_retry_at <= NOW()
+LIMIT $1
+FOR UPDATE SKIP LOCKED;
+```
+
+Retencion diaria:
+
+```sql
+DELETE FROM order_notifications
+WHERE status IN ('sent', 'failed')
+AND completed_at < NOW() - INTERVAL '7 days';
+```
+
 ## Frontend por servicios
 
 - Home (`/`) muestra 6 opciones principales:
@@ -155,14 +213,37 @@ render.yaml
 ## Endpoints API
 
 - Auth:
-	- `POST /auth/register`
-	- `POST /auth/login`
-	- `POST /auth/logout`
-	- `GET /auth/me`
+	- `POST /api/v1/auth/register/start`
+	- `POST /api/v1/auth/register/complete`
+	- `POST /api/v1/auth/login`
+	- `POST /api/v1/auth/logout`
+	- `GET /api/v1/auth/me`
 - Catalogo:
-	- `GET /catalog`
-- Admin (requiere rol `administrador`):
-	- `GET /admin/config`
-	- `PUT /admin/status`
-	- `PUT /admin/availability`
-	- `PUT /admin/price`
+	- `GET /api/v1/catalog`
+- Ordenes v1:
+	- `POST /api/v1/orders`
+	- `GET /api/v1/orders`
+	- `GET /api/v1/orders/:orderId`
+	- `PATCH /api/v1/orders/:orderId/status` (admin)
+	- `GET /api/v1/orders/notifications/retries/active` (admin)
+	- `GET /api/v1/orders/notifications/failures/final` (admin)
+- Admin config (requiere rol `administrador`):
+	- `GET /api/v1/admin/config`
+	- `PUT /api/v1/admin/status`
+	- `PUT /api/v1/admin/availability`
+	- `PUT /api/v1/admin/price`
+
+## Prueba de integracion v1
+
+Con servicios levantados (`database`, `disbot`, `api`):
+
+```bash
+npm --prefix api run test:orders:v1
+```
+
+El script valida:
+- creacion de orden
+- idempotencia
+- `UNIQUE(order_id)` en notificaciones
+- ejecucion de retry batch
+- limpieza por retencion

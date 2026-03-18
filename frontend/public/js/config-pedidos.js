@@ -5,17 +5,54 @@
   const ordersStatusFilter = document.getElementById('orders-status-filter');
   const ordersTableBody = document.getElementById('orders-table-body');
   const message = document.getElementById('config-message');
-  const orderStatusValues = ['Cotizacion', 'En espera', 'Realizando', 'Finalizado'];
+  const ORDER_STATUS_VALUES = ['IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+  const STATUS_LABELS = {
+    PENDING: 'Pendiente',
+    NOTIFIED: 'Notificado',
+    IN_PROGRESS: 'En progreso',
+    COMPLETED: 'Completado',
+    FAILED_NOTIFY: 'Fallo notificacion',
+    CANCELLED: 'Cancelado'
+  };
+  const NOTIFICATION_LABELS = {
+    pending: 'Pendiente',
+    retry: 'Reintento',
+    sent: 'Enviada',
+    failed: 'Fallida'
+  };
 
   let allOrders = [];
   let ordersSearchTimeout = null;
 
-  async function updateOrderStatus(orderId, estado) {
-    const response = await fetch(`${apiBaseUrl}/admin/orders/${orderId}`, {
-      method: 'PUT',
+  function toStatusLabel(status) {
+    return STATUS_LABELS[status] || status || '-';
+  }
+
+  function toNotificationLabel(status) {
+    return NOTIFICATION_LABELS[status] || status || '-';
+  }
+
+  function toServicesLabel(order) {
+    const list = Array.isArray(order && order.services)
+      ? order.services
+      : [];
+    const labels = list
+      .map((service) => (service && service.label ? String(service.label).trim() : ''))
+      .filter(Boolean);
+
+    if (labels.length > 0) {
+      return labels.join(', ');
+    }
+
+    return 'Sin detalle historico';
+  }
+
+  async function updateOrderStatus(orderId, status) {
+    const response = await fetch(`${apiBaseUrl}/orders/admin/${orderId}/status`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ estado })
+      body: JSON.stringify({ status })
     });
 
     const data = await response.json();
@@ -27,7 +64,7 @@
   }
 
   async function removeOrder(orderId) {
-    const response = await fetch(`${apiBaseUrl}/admin/orders/${orderId}`, {
+    const response = await fetch(`${apiBaseUrl}/orders/admin/${orderId}`, {
       method: 'DELETE',
       credentials: 'include'
     });
@@ -50,7 +87,7 @@
     if (allOrders.length < 1) {
       const row = document.createElement('tr');
       const cell = document.createElement('td');
-      cell.colSpan = 8;
+      cell.colSpan = 9;
       cell.textContent = 'No hay pedidos para los filtros actuales.';
       row.appendChild(cell);
       ordersTableBody.appendChild(row);
@@ -61,7 +98,7 @@
       const row = document.createElement('tr');
 
       const idCell = document.createElement('td');
-      idCell.textContent = String(order.id);
+      idCell.textContent = String(order.orderId || '-');
 
       const userCell = document.createElement('td');
       userCell.textContent = order.usuario || '-';
@@ -69,27 +106,41 @@
       const emailCell = document.createElement('td');
       emailCell.textContent = order.email || '-';
 
-      const contactCell = document.createElement('td');
-      const platform = order.contacto && order.contacto.plataforma ? utils.formatPlatform(order.contacto.plataforma) : '-';
-      const contactValue = order.contacto && order.contacto.contacto ? order.contacto.contacto : '-';
-      contactCell.textContent = `${platform}: ${contactValue}`;
-
-      const paymentCell = document.createElement('td');
-      paymentCell.textContent = order.metodoPago || '-';
-
       const servicesCell = document.createElement('td');
-      servicesCell.textContent = utils.formatOrderServices(order.services);
+      servicesCell.textContent = toServicesLabel(order);
+
+      const totalCell = document.createElement('td');
+      const totalCop = Number(order.totalCop || 0);
+      const totalUsd = Number(order.totalUsd || 0);
+      totalCell.textContent = `${utils.formatCop(totalCop)} COP / ${totalUsd.toFixed(2)} USD`;
+
+      const notificationCell = document.createElement('td');
+      const notification = order.notification || {};
+      notificationCell.textContent = `${toNotificationLabel(notification.status)} (reintentos: ${Number(notification.retryCount || 0)})`;
+
+      const updatedCell = document.createElement('td');
+      updatedCell.textContent = utils.formatDate(order.updatedAt);
 
       const statusCell = document.createElement('td');
       const statusSelect = document.createElement('select');
       statusSelect.className = 'text-input users-input';
-      orderStatusValues.forEach((status) => {
+      ORDER_STATUS_VALUES.forEach((status) => {
         const option = document.createElement('option');
         option.value = status;
-        option.textContent = status;
+        option.textContent = toStatusLabel(status);
         statusSelect.appendChild(option);
       });
-      statusSelect.value = order.estado;
+
+      if (!ORDER_STATUS_VALUES.includes(order.status)) {
+        const current = document.createElement('option');
+        current.value = order.status;
+        current.textContent = `${toStatusLabel(order.status)} (actual)`;
+        current.selected = true;
+        statusSelect.appendChild(current);
+      } else {
+        statusSelect.value = order.status;
+      }
+
       statusCell.appendChild(statusSelect);
 
       const actionsCell = document.createElement('td');
@@ -101,8 +152,8 @@
       saveBtn.textContent = 'Guardar';
       saveBtn.addEventListener('click', async () => {
         try {
-          const updated = await updateOrderStatus(order.id, statusSelect.value);
-          const index = allOrders.findIndex((entry) => entry.id === order.id);
+          const updated = await updateOrderStatus(order.orderId, statusSelect.value);
+          const index = allOrders.findIndex((entry) => entry.orderId === order.orderId);
           if (index >= 0) {
             allOrders[index] = updated;
           }
@@ -118,14 +169,14 @@
       deleteBtn.className = 'btn-secondary';
       deleteBtn.textContent = 'Eliminar';
       deleteBtn.addEventListener('click', async () => {
-        const accepted = window.confirm(`Eliminar pedido #${order.id}?`);
+        const accepted = window.confirm(`Eliminar pedido #${order.orderId}?`);
         if (!accepted) {
           return;
         }
 
         try {
-          await removeOrder(order.id);
-          allOrders = allOrders.filter((entry) => entry.id !== order.id);
+          await removeOrder(order.orderId);
+          allOrders = allOrders.filter((entry) => entry.orderId !== order.orderId);
           utils.showMessage(message, 'Pedido eliminado.', false);
           renderOrdersTable();
         } catch (error) {
@@ -139,9 +190,10 @@
       row.appendChild(idCell);
       row.appendChild(userCell);
       row.appendChild(emailCell);
-      row.appendChild(contactCell);
-      row.appendChild(paymentCell);
       row.appendChild(servicesCell);
+      row.appendChild(totalCell);
+      row.appendChild(notificationCell);
+      row.appendChild(updatedCell);
       row.appendChild(statusCell);
       row.appendChild(actionsCell);
 
@@ -152,17 +204,17 @@
   async function loadOrders() {
     try {
       const q = ordersSearchInput ? ordersSearchInput.value.trim() : '';
-      const estado = ordersStatusFilter ? String(ordersStatusFilter.value || '').trim() : '';
+      const status = ordersStatusFilter ? String(ordersStatusFilter.value || '').trim().toUpperCase() : '';
       const params = new URLSearchParams();
       if (q) {
         params.set('q', q);
       }
-      if (estado) {
-        params.set('estado', estado);
+      if (status) {
+        params.set('status', status);
       }
 
       const query = params.toString();
-      const url = query ? `${apiBaseUrl}/admin/orders?${query}` : `${apiBaseUrl}/admin/orders`;
+      const url = query ? `${apiBaseUrl}/orders/admin?${query}` : `${apiBaseUrl}/orders/admin`;
       const response = await fetch(url, {
         credentials: 'include'
       });

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node src/index.js",
     "start": "node src/index.js",
-    "migrate": "node src/db/runMigrations.js"
+    "migrate": "node src/db/runMigrations.js",
+    "test:orders:v1": "node scripts/test-orders-v1.js"
   },
   "dependencies": {
     "argon2": "^0.41.1",

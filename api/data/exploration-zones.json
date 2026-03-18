@@ -1,0 +1,201 @@
+[
+  {
+    "id": "monstadt",
+    "name": "Monstadt",
+    "image": "monstadt_s.webp",
+    "basePriceCop": 30000,
+    "missionOptions": []
+  },
+  {
+    "id": "liyue",
+    "name": "Liyue",
+    "image": "liyue_s.webp",
+    "basePriceCop": 55000,
+    "missionOptions": []
+  },
+  {
+    "id": "inazuma",
+    "name": "Inazuma",
+    "image": "inazuma_s.webp",
+    "basePriceCop": 60000,
+    "missionBundleTotalCop": 90000,
+    "missionOptions": [
+      {
+        "id": "through-the-mists",
+        "name": "Through the Mists",
+        "priceCop": 10000
+      },
+      {
+        "id": "sacred-sakura-cleansing-ritual",
+        "name": "Sacred Sakura Cleansing Ritual",
+        "priceCop": 9000
+      },
+      {
+        "id": "tatara-tales",
+        "name": "Tatara Tales",
+        "priceCop": 3000
+      },
+      {
+        "id": "orobashi's-legacy",
+        "name": "Orobashi's Legacy",
+        "priceCop": 3000
+      },
+      {
+        "id": "the-moon-bathed-deep",
+        "name": "The Moon-Bathed Deep",
+        "priceCop": 2500
+      },
+      {
+        "id": "seirai-stormchasers",
+        "name": "Seirai Stormchasers",
+        "priceCop": 2500
+      }
+    ]
+  },
+  {
+    "id": "enkanomiya",
+    "name": "Enkanomiya",
+    "image": "enkanomiya_s.webp",
+    "basePriceCop": 40000,
+    "missionOptions": []
+  },
+  {
+    "id": "sima",
+    "name": "Sima (Los 2)",
+    "image": "sima_s.webp",
+    "basePriceCop": 50000,
+    "missionOptions": []
+  },
+  {
+    "id": "valle-chenyu",
+    "name": "Valle Chenyu",
+    "image": "valle-chenyu_s.webp",
+    "basePriceCop": 40000,
+    "missionOptions": []
+  },
+  {
+    "id": "sumeru-selva",
+    "name": "Sumeru (Selva)",
+    "image": "sumeru-selva_s.webp",
+    "basePriceCop": 100000,
+    "missionBundleTotalCop": 150000,
+    "missionOptions": [
+      {
+        "id": "aranyaka",
+        "name": "Aranyaka",
+        "priceCop": 50000
+      }
+    ]
+  },
+  {
+    "id": "sumeru-desiertos",
+    "name": "Sumeru (Desiertos)",
+    "image": "sumeru-desiertos_s.webp",
+    "basePriceCop": 175000,
+    "missionBundleTotalCop": 250000,
+    "missionOptions": [
+      {
+        "id": "golden-slumber",
+        "name": "Golden Slumber",
+        "priceCop": 25000
+      },
+      {
+        "id": "dirge-of-bilqis",
+        "name": "Dirge of Bilqis",
+        "priceCop": 25000
+      },
+      {
+        "id": "khvarena-of-good-and-evil",
+        "name": "Khvarena of Good and Evil",
+        "priceCop": 10000
+      },
+      {
+        "id": "the-fallen-falcon",
+        "name": "The Fallen Falcon",
+        "priceCop": 10000
+      },
+      {
+        "id": "afratu's-dilemma",
+        "name": "Afratu's Dilemma",
+        "priceCop": 5000
+      }
+    ]
+  },
+  {
+    "id": "fontaine",
+    "name": "Fontaine",
+    "image": "fontaine_s.webp",
+    "basePriceCop": 90000,
+    "missionBundleTotalCop": 265000,
+    "missionOptions": [
+      {
+        "id": "narzissenkreuz",
+        "name": "Narzissenkreuz",
+        "priceCop": 41000
+      },
+      {
+        "id": "unfinished-comedy",
+        "name": "Unfinished Comedy",
+        "priceCop": 41000
+      },
+      {
+        "id": "fontaine-research-institute-chronicles",
+        "name": "Fontaine Research Institute Chronicles",
+        "priceCop": 41000
+      },
+      {
+        "id": "ancient-colors",
+        "name": "Ancient Colors",
+        "priceCop": 26000
+      },
+
+      {
+        "id": "the-wild-fairy-of-erinnyes",
+        "name": "The Wild Fairy of Erinnyes",
+        "priceCop": 26000
+      }
+    ]
+  },
+  {
+    "id": "natlan",
+    "name": "Natlan",
+    "image": "natlan_s.webp",
+    "basePriceCop": 180000,
+    "missionOptions": []
+  },
+  {
+    "id": "nod-krai",
+    "name": "Nod Krai",
+    "image": "nod-krai_s.webp",
+    "basePriceCop": 80000,
+    "missionOptions": []
+  },
+  {
+    "id": "montana-sagrada",
+    "name": "Montana Sagrada",
+    "image": "montana-sagrada_s.webp",
+    "basePriceCop": 30000,
+    "missionOptions": []
+  },
+  {
+    "id": "espinadragon",
+    "name": "Espinadragon",
+    "image": "espinadragon_s.webp",
+    "basePriceCop": 30000,
+    "missionOptions": []
+  },
+  {
+    "id": "mar-de-antano-petricor",
+    "name": "Mar de Antano Petricor",
+    "image": "mar-de-antano-petricor_s.webp",
+    "basePriceCop": 30000,
+    "missionBundleTotalCop": 40000,
+    "missionOptions": [
+      {
+        "id": "canticles-of-harmony",
+        "name": "Canticles of Harmony",
+        "priceCop": 10000
+      }
+    ]
+  }
+]
